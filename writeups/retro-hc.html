@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retro - HC // fstringuetta</title>
+  <title>Retro - HC // 0x404</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
@@ -201,10 +201,13 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="../index.html" class="nav-logo">FSTR<span class="slash">/</span>NGUETTA</a>
+    <a href="../index.html" class="nav-logo">0x404</a>
     <a href="../index.html" class="nav-back">Voltar</a>
   </div>
 </nav>
+
+<div class="toc-wrap">
+</div>
 
 <div class="page">
 
@@ -516,6 +519,20 @@ $ chmod +x /home/appuser/roms/evil.smc</code></pre>
     const y = (e.clientY / window.innerHeight - 0.5) * 14;
     document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
   });
+
+  // TOC highlight ativo
+  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => observer.observe(s));
 </script>
 </body>
 </html>
