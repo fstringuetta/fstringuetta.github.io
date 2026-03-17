@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fstringuetta // GRID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #000408;
+      --dark:    #010b14;
+      --panel:   #010d1a;
+      --cyan:    #00d4ff;
+      --cyan2:   #00aacc;
+      --cyan-dim:#004455;
+      --orange:  #ff6600;
+      --white:   #e0f7ff;
+      --muted:   #3a7a8a;
+      --grid-color: #001f2e;
+      --ff-title: 'Orbitron', monospace;
+      --ff-mono:  'Share Tech Mono', monospace;
+      --glow-sm:  0 0 8px #00d4ff88;
+      --glow-md:  0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+      --glow-lg:  0 0 24px #00d4ffcc, 0 0 60px #00d4ff55, 0 0 100px #00d4ff22;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--ff-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    .scanlines {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    }
+
+    .vignette {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, #000408cc 100%);
+    }
+
+    .beam {
+      position: fixed; top: 0; left: -100%; width: 60%; height: 2px; z-index: 3;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      animation: beam 8s ease-in-out infinite; opacity: 0.4;
+    }
+    @keyframes beam { 0%,100%{left:-60%;top:20%} 50%{left:120%;top:60%} }
+
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--cyan-dim);
+      background: rgba(0,4,8,0.92);
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 900px; margin: 0 auto; padding: 0 32px;
+      display: flex; align-items: stretch; justify-content: space-between;
+      height: 52px;
+    }
+    .nav-logo {
+      font-family: var(--ff-title); font-size: 14px; font-weight: 700;
+      color: var(--cyan); text-decoration: none; letter-spacing: 0.15em;
+      text-shadow: var(--glow-sm); display: flex; align-items: center;
+      border-right: 1px solid var(--cyan-dim); padding-right: 24px;
+    }
+    .nav-logo .slash { color: var(--orange); margin: 0 2px; }
+    .nav-links { display: flex; list-style: none; }
+    .nav-links li { border-left: 1px solid var(--cyan-dim); }
+    .nav-links a {
+      display: flex; align-items: center; padding: 0 20px; height: 52px;
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      transition: color .2s, background .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: var(--cyan); box-shadow: var(--glow-sm);
+      transform: scaleX(0); transition: transform .2s;
+    }
+    .nav-links a:hover { color: var(--cyan); background: rgba(0,212,255,0.04); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    .hero { padding: 100px 0 80px; }
+    .hero-pre {
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hero-pre::before {
+      content: ''; display: block; width: 40px; height: 1px;
+      background: var(--cyan); box-shadow: var(--glow-sm);
+    }
+    .hero-name {
+      font-family: var(--ff-title);
+      font-size: clamp(42px, 8vw, 88px);
+      font-weight: 900; letter-spacing: -0.02em; line-height: 1;
+      color: var(--cyan); text-shadow: var(--glow-lg); margin-bottom: 4px;
+    }
+    .hero-handle {
+      font-family: var(--ff-title);
+      font-size: clamp(16px, 3vw, 22px); font-weight: 400;
+      color: var(--orange); letter-spacing: 0.1em;
+      text-shadow: 0 0 12px #ff660088; margin-bottom: 32px;
+    }
+    .hero-handle::before { content: '// '; }
+    .hero-desc {
+      max-width: 520px; color: var(--muted); font-size: 14px; line-height: 1.9;
+      border-left: 2px solid var(--cyan-dim); padding-left: 20px; margin-bottom: 36px;
+    }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      font-family: var(--ff-title); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 16px;
+      border: 1px solid var(--cyan-dim); color: var(--cyan2);
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: all .2s;
+    }
+    .badge:hover { border-color: var(--cyan); color: var(--cyan); text-shadow: var(--glow-sm); }
+    .badge-orange { border-color: #ff660055; color: var(--orange); }
+    .badge-orange:hover { border-color: var(--orange); text-shadow: 0 0 8px #ff660088; }
+
+    section { padding: 72px 0; }
+    .section-head { display: flex; align-items: center; gap: 0; margin-bottom: 48px; }
+    .section-num { font-family: var(--ff-title); font-size: 11px; color: var(--orange); letter-spacing: 0.15em; margin-right: 16px; opacity: .7; }
+    .section-title {
+      font-family: var(--ff-title); font-size: 20px; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--cyan);
+      text-shadow: var(--glow-sm); text-transform: uppercase;
+      margin-right: 20px; white-space: nowrap;
+    }
+    .section-line {
+      flex: 1; height: 1px; background: linear-gradient(90deg, var(--cyan-dim), transparent); position: relative;
+    }
+    .section-line::after {
+      content: ''; position: absolute; left: 0; top: 0; height: 1px;
+      background: var(--cyan); box-shadow: var(--glow-sm);
+      animation: linepulse 3s ease-in-out infinite;
+    }
+    @keyframes linepulse { 0%,100%{width:20%;opacity:.6} 50%{width:60%;opacity:1} }
+
+    .writeup-grid { display: grid; gap: 2px; }
+    .writeup-card {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px 20px;
+      padding: 24px 28px; background: var(--panel);
+      border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan-dim);
+      text-decoration: none; color: inherit; transition: all .25s; position: relative; overflow: hidden;
+    }
+    .writeup-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--cyan); box-shadow: var(--glow-md);
+      transform: scaleY(0); transition: transform .25s; transform-origin: bottom;
+    }
+    .writeup-card:hover { background: #011520; border-color: var(--cyan2); }
+    .writeup-card:hover::before { transform: scaleY(1); }
+    .writeup-card:hover .wc-arrow { color: var(--cyan); text-shadow: var(--glow-sm); transform: translate(3px,-3px); }
+
+    .wc-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .wc-cat {
+      font-family: var(--ff-title); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 10px; border: 1px solid;
+    }
+    .cat-web   { border-color: #00d4ff55; color: var(--cyan2); }
+    .cat-ad    { border-color: #ff660055; color: var(--orange); }
+    .cat-re    { border-color: #ff224455; color: #ff4466; }
+    .cat-cloud { border-color: #44ff8855; color: #44ff88; }
+    .cat-ctf   { border-color: #aa44ff55; color: #cc88ff; }
+    .wc-date { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+    .wc-title { font-family: var(--ff-title); font-size: 16px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.4; color: var(--white); }
+    .wc-desc  { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+    .wc-tags  { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .tag { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; padding: 2px 8px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wc-arrow { font-size: 18px; color: var(--muted); grid-row: 1/3; align-self: center; transition: all .25s; }
+
+    .research-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    @media (max-width: 620px) { .research-grid { grid-template-columns: 1fr; } }
+    .research-card {
+      padding: 28px; background: var(--panel); border: 1px solid var(--cyan-dim);
+      position: relative; overflow: hidden; transition: border-color .2s, background .2s;
+    }
+    .research-card::after {
+      content: ''; position: absolute; right: -40px; bottom: -40px;
+      width: 100px; height: 100px; border: 1px solid var(--cyan-dim); border-radius: 50%; transition: all .3s;
+    }
+    .research-card:hover { border-color: var(--cyan2); background: #011520; }
+    .research-card:hover::after { border-color: var(--cyan2); right: -20px; bottom: -20px; box-shadow: var(--glow-sm); }
+    .rc-icon { font-size: 24px; margin-bottom: 16px; }
+    .rc-title { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin-bottom: 10px; }
+    .rc-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .rc-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 11px; color: var(--orange); letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; font-family: var(--ff-title); }
+    .rc-link:hover { text-shadow: 0 0 8px #ff660088; }
+
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 2px; }
+    .tool-item {
+      background: var(--panel); border: 1px solid var(--cyan-dim);
+      padding: 12px 16px; display: flex; align-items: center; gap: 10px; transition: all .2s;
+    }
+    .tool-item:hover { border-color: var(--cyan2); background: #011520; }
+    .tool-item:hover .tool-name { color: var(--cyan); }
+    .tool-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+    .tool-name { font-size: 12px; letter-spacing: 0.04em; transition: color .2s; }
+
+    .cert-list { display: flex; flex-direction: column; gap: 2px; }
+    .cert-item {
+      display: flex; align-items: center; gap: 20px;
+      padding: 20px 28px; background: var(--panel); border: 1px solid var(--cyan-dim);
+      transition: all .2s; position: relative; overflow: hidden;
+    }
+    .cert-item::before {
+      content: attr(data-num); position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+      font-family: var(--ff-title); font-size: 48px; font-weight: 900;
+      color: rgba(0,212,255,0.04); pointer-events: none;
+    }
+    .cert-item:hover { border-color: var(--cyan2); background: #011520; }
+    .cert-badge { width: 44px; height: 44px; border: 1px solid var(--cyan-dim); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .cert-name { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--white); }
+    .cert-org  { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; margin-top: 2px; }
+    .cert-year { margin-left: auto; font-family: var(--ff-title); font-size: 12px; color: var(--orange); letter-spacing: 0.1em; padding-right: 80px; }
+
+    .about-wrap { display: grid; grid-template-columns: 1fr 260px; gap: 48px; }
+    @media (max-width: 680px) { .about-wrap { grid-template-columns: 1fr; } }
+    .about-text { font-size: 14px; color: var(--muted); line-height: 1.9; }
+    .about-text p + p { margin-top: 1em; }
+    .about-text a { color: var(--cyan2); text-decoration: none; }
+    .about-text a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    code { font-family: var(--ff-mono); font-size: 12px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 1px 6px; border: 1px solid rgba(255,102,0,0.2); }
+
+    .contact-links { display: flex; flex-direction: column; gap: 2px; }
+    .contact-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; background: var(--panel); border: 1px solid var(--cyan-dim);
+      text-decoration: none; color: var(--white); transition: all .2s;
+    }
+    .contact-link:hover { border-color: var(--cyan); background: #011520; }
+    .contact-link:hover .cl-arrow { transform: translate(2px,-2px); color: var(--cyan); }
+    .cl-icon { font-size: 16px; flex-shrink: 0; }
+    .cl-name { font-family: var(--ff-title); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan); }
+    .cl-sub  { font-size: 11px; color: var(--muted); }
+    .cl-arrow { margin-left: auto; color: var(--muted); font-size: 14px; transition: all .2s; }
+
+    .blink { animation: blink .9s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .tron-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent); }
+
+    footer {
+      border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--muted); letter-spacing: 0.08em;
+    }
+    .footer-status { display: flex; align-items: center; gap: 8px; }
+    .status-dot { width: 6px; height: 6px; background: #44ff88; border-radius: 50%; box-shadow: 0 0 8px #44ff88; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="beam"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">FSTR<span class="slash">/</span>NGUETTA</a>
+    <ul class="nav-links">
+      <li><a href="#writeups">Write-ups</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#certs">Certs</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page">
+
+  <section class="hero reveal">
+    <p class="hero-pre">Security Researcher · Red Team · CTF Player</p>
+    <h1 class="hero-name">FSTRINGUETTA</h1>
+    <p class="hero-handle">SECURITY.RESEARCHER<span class="blink">_</span></p>
+    <p class="hero-desc">
+      Pesquisador de segurança ofensiva. Especializado em web pentesting, Active Directory e red team operations.
+      Este espaço documenta pesquisas reais, write-ups técnicos e ferramentas desenvolvidas ao longo do caminho.
+    </p>
+    <div class="hero-badges">
+      <span class="badge badge-orange">OSCP</span>
+      <span class="badge">Web Pentesting</span>
+      <span class="badge">Active Directory</span>
+      <span class="badge">Red Team</span>
+      <span class="badge">CTF Player</span>
+    </div>
+  </section>
+
+  <div class="tron-divider"></div>
+
+  <section id="writeups">
+    <div class="section-head reveal">
+      <span class="section-num">01.</span>
+      <h2 class="section-title">Write-ups</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="writeup-grid">
+      <a href="#" class="writeup-card reveal">
+        <div>
+          <div class="wc-meta"><span class="wc-cat cat-web">Web App</span><span class="wc-date">MAR 2025</span></div>
+          <h3 class="wc-title">SQL Injection → RCE: do bypass de WAF ao shell</h3>
+          <p class="wc-desc">Exploração de SQLi em e-commerce com WAF. Bypass usando encodings aninhados, extração de hashes e escalada via <code>xp_cmdshell</code>.</p>
+          <div class="wc-tags"><span class="tag">SQLi</span><span class="tag">WAF bypass</span><span class="tag">MSSQL</span><span class="tag">RCE</span></div>
+        </div>
+        <span class="wc-arrow">↗</span>
+      </a>
+      <a href="#" class="writeup-card reveal">
+        <div>
+          <div class="wc-meta"><span class="wc-cat cat-ad">Active Directory</span><span class="wc-date">FEV 2025</span></div>
+          <h3 class="wc-title">Kerberoasting + ADCS ESC1: comprometendo um domínio completo</h3>
+          <p class="wc-desc">Cadeia de ataque: enumeração, Kerberoasting, abuso de template ADCS vulnerável e DCSync para dump do <code>krbtgt</code>.</p>
+          <div class="wc-tags"><span class="tag">Kerberoasting</span><span class="tag">ADCS</span><span class="tag">DCSync</span><span class="tag">BloodHound</span></div>
+        </div>
+        <span class="wc-arrow">↗</span>
+      </a>
+      <a href="#" class="writeup-card reveal">
+        <div>
+          <div class="wc-meta"><span class="wc-cat cat-ctf">HTB · Hard</span><span class="wc-date">JAN 2025</span></div>
+          <h3 class="wc-title">HackTheBox: SSRF → AWS Metadata → Privilege Escalation</h3>
+          <p class="wc-desc">SSRF com endpoint <code>169.254.169.254</code>, extração de credenciais IAM temporárias e escalada via misconfiguration em S3.</p>
+          <div class="wc-tags"><span class="tag">SSRF</span><span class="tag">AWS</span><span class="tag">IAM</span><span class="tag">HTB</span></div>
+        </div>
+        <span class="wc-arrow">↗</span>
+      </a>
+      <a href="#" class="writeup-card reveal">
+        <div>
+          <div class="wc-meta"><span class="wc-cat cat-re">Malware Analysis</span><span class="wc-date">DEZ 2024</span></div>
+          <h3 class="wc-title">Process Hollowing na prática: análise de amostra real</h3>
+          <p class="wc-desc">Análise estática e dinâmica: unpacking, reconstrução de IAT e identificação do C2 via tráfego criptografado.</p>
+          <div class="wc-tags"><span class="tag">Malware</span><span class="tag">Process Hollowing</span><span class="tag">Ghidra</span><span class="tag">C2</span></div>
+        </div>
+        <span class="wc-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="tron-divider"></div>
+
+  <section id="research">
+    <div class="section-head reveal">
+      <span class="section-num">02.</span>
+      <h2 class="section-title">Research Areas</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="research-grid">
+      <div class="research-card reveal">
+        <div class="rc-icon">◈</div>
+        <h3 class="rc-title">Web Application Security</h3>
+        <p class="rc-desc">Vulnerabilidades lógicas, bypass de autenticação, OWASP Top 10 em ambientes reais. Foco em falhas que scanners automáticos não detectam.</p>
+        <a href="#" class="rc-link">Explorar →</a>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">⬡</div>
+        <h3 class="rc-title">Active Directory & Windows</h3>
+        <p class="rc-desc">Kerberos attacks, LDAP enumeration, lateral movement, abuso de delegações e privilege escalation em domínios corporativos.</p>
+        <a href="#" class="rc-link">Explorar →</a>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">☁</div>
+        <h3 class="rc-title">Cloud Security</h3>
+        <p class="rc-desc">IAM misconfigurations, SSRF para metadata endpoints, privilege escalation em AWS e Azure. Labs com terraform.</p>
+        <a href="#" class="rc-link">Explorar →</a>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">⚙</div>
+        <h3 class="rc-title">Malware & Reversing</h3>
+        <p class="rc-desc">Análise de amostras reais, técnicas de evasão, persistência e C2. Engenharia reversa com Ghidra, x64dbg e FLARE-VM.</p>
+        <a href="#" class="rc-link">Explorar →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="tron-divider"></div>
+
+  <section>
+    <div class="section-head reveal">
+      <span class="section-num">03.</span>
+      <h2 class="section-title">Arsenal</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="tools-grid reveal">
+      <div class="tool-item"><span class="tool-dot" style="background:#00d4ff;color:#00d4ff"></span><span class="tool-name">Burp Suite Pro</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#ff6600;color:#ff6600"></span><span class="tool-name">BloodHound</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#ff4466;color:#ff4466"></span><span class="tool-name">Impacket</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#44ff88;color:#44ff88"></span><span class="tool-name">Metasploit</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#00d4ff;color:#00d4ff"></span><span class="tool-name">Nmap / Naabu</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#ff6600;color:#ff6600"></span><span class="tool-name">Ghidra / x64dbg</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#ff4466;color:#ff4466"></span><span class="tool-name">CrackMapExec</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#44ff88;color:#44ff88"></span><span class="tool-name">Nuclei / FFUF</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#00d4ff;color:#00d4ff"></span><span class="tool-name">Cobalt Strike</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#cc88ff;color:#cc88ff"></span><span class="tool-name">Python / Bash</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#ff6600;color:#ff6600"></span><span class="tool-name">PowerShell / C#</span></div>
+      <div class="tool-item"><span class="tool-dot" style="background:#00d4ff;color:#00d4ff"></span><span class="tool-name">Wireshark</span></div>
+    </div>
+  </section>
+
+  <div class="tron-divider"></div>
+
+  <section id="certs">
+    <div class="section-head reveal">
+      <span class="section-num">04.</span>
+      <h2 class="section-title">Certifications</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="cert-list">
+      <div class="cert-item reveal" data-num="01">
+        <div class="cert-badge">🟠</div>
+        <div>
+          <div class="cert-name">OFFENSIVE SECURITY CERTIFIED PROFESSIONAL</div>
+          <div class="cert-org">Offensive Security · OSCP</div>
+        </div>
+        <span class="cert-year">2024</span>
+      </div>
+      <div class="cert-item reveal" data-num="02">
+        <div class="cert-badge">🔵</div>
+        <div>
+          <div class="cert-name">EWPTX — WEB APPLICATION PENETRATION TESTER</div>
+          <div class="cert-org">eLearnSecurity / INE</div>
+        </div>
+        <span class="cert-year">2023</span>
+      </div>
+      <div class="cert-item reveal" data-num="03">
+        <div class="cert-badge">⚫</div>
+        <div>
+          <div class="cert-name">CERTIFIED ETHICAL HACKER</div>
+          <div class="cert-org">EC-Council · CEH</div>
+        </div>
+        <span class="cert-year">2023</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="tron-divider"></div>
+
+  <section id="about">
+    <div class="section-head reveal">
+      <span class="section-num">05.</span>
+      <h2 class="section-title">About</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-wrap">
+      <div class="about-text reveal">
+        <p>Atuo com segurança ofensiva há X anos, com foco em testes de intrusão em aplicações web e ambientes corporativos Windows/Active Directory.</p>
+        <p>Participo de programas de bug bounty nas plataformas HackerOne e Bugcrowd, e resolvo desafios no HackTheBox e TryHackMe para manter as técnicas afiadas.</p>
+        <p>Este espaço existe para documentar o que aprendo — write-ups detalhados, notas de pesquisa e ferramentas que construo ao longo do caminho. Disponível para projetos freelance e consultorias.</p>
+        <p style="margin-top:1.5em">→ <a href="mailto:fstringuetta@email.com">fstringuetta@email.com</a></p>
+      </div>
+      <div class="contact-links reveal">
+        <a href="https://github.com/fstringuetta" target="_blank" class="contact-link">
+          <span class="cl-icon">⌥</span>
+          <div><div class="cl-name">GitHub</div><div class="cl-sub">github.com/fstringuetta</div></div>
+          <span class="cl-arrow">↗</span>
+        </a>
+        <a href="https://linkedin.com/in/fstringuetta" target="_blank" class="contact-link">
+          <span class="cl-icon">◈</span>
+          <div><div class="cl-name">LinkedIn</div><div class="cl-sub">linkedin.com/in/fstringuetta</div></div>
+          <span class="cl-arrow">↗</span>
+        </a>
+        <a href="https://app.hackthebox.com/profile/0" target="_blank" class="contact-link">
+          <span class="cl-icon">⬡</span>
+          <div><div class="cl-name">HackTheBox</div><div class="cl-sub">Ver perfil</div></div>
+          <span class="cl-arrow">↗</span>
+        </a>
+        <a href="https://tryhackme.com/p/fstringuetta" target="_blank" class="contact-link">
+          <span class="cl-icon">◎</span>
+          <div><div class="cl-name">TryHackMe</div><div class="cl-sub">Ver perfil</div></div>
+          <span class="cl-arrow">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-status">
+      <span class="status-dot"></span>
+      <span>SISTEMA ONLINE // fstringuetta.github.io</span>
+    </div>
+    <span>© 2025 · HTML PURO · GITHUB PAGES</span>
+  </footer>
+
+</div>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
