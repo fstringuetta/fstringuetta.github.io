@@ -63,14 +63,7 @@
     .hp { font-size: 12px; color: #8ab4be; display: flex; gap: 10px; }
     .hp-port { color: var(--orange); min-width: 50px; }
 
-    .toc { background: var(--panel); border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); padding: 24px 28px; margin-bottom: 48px; }
-    .toc-title { font-family: var(--ff-title); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 14px; }
-    .toc ol { list-style: none; counter-reset: toc; }
-    .toc li { counter-increment: toc; padding: 5px 0; border-bottom: 1px solid #ffffff06; }
-    .toc li:last-child { border-bottom: none; }
-    .toc a { color: var(--muted); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 10px; transition: color .2s; }
-    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 10px; color: var(--cyan-dim); min-width: 28px; }
-    .toc a:hover { color: var(--cyan); }
+    
 
     .wu-content { max-width: 760px; }
     .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
@@ -115,19 +108,23 @@
     .callout-warn p { color: #aa6633; margin: 0; }
 
     /* ── TOC STICKY ── */
-    .toc {
-      position: sticky; top: 52px; z-index: 50;
+    .toc-wrap {
+      position: sticky; top: 52px; z-index: 90;
       background: rgba(0,4,8,0.97); backdrop-filter: blur(12px);
-      border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan);
-      padding: 16px 28px; margin-bottom: 48px;
+      border-bottom: 1px solid var(--cyan-dim);
+      border-top: 1px solid var(--cyan-dim);
     }
-    .toc-title { font-family: var(--ff-title); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
-    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; gap: 4px 0; }
+    .toc {
+      max-width: 900px; margin: 0 auto; padding: 10px 32px;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
     .toc li { counter-increment: toc; }
     .toc a {
       color: var(--muted); text-decoration: none;
       font-size: 11px; display: flex; align-items: center;
-      gap: 6px; padding: 4px 16px 4px 0;
+      gap: 5px; padding: 4px 14px 4px 0;
       transition: color .2s; white-space: nowrap;
     }
     .toc a::before {
@@ -156,13 +153,28 @@
   </div>
 </nav>
 
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#recon">Information Gathering</a></li>
+      <li><a href="#nfs">Enumeração NFS</a></li>
+      <li><a href="#roundcube">Roundcube RCE</a></li>
+      <li><a href="#lateral">NFS UID Spoofing</a></li>
+      <li><a href="#keepass">KeePass</a></li>
+      <li><a href="#adcs">ADCS ESC1</a></li>
+      <li><a href="#admin">Administrator</a></li>
+    </ol>
+  </nav>
+</div>
+
 <div class="page">
 
   <header class="wu-header">
     <div class="wu-meta">
       <span class="wu-cat cat-chain">Vulnlab · Chain</span>
       <span class="wu-date">FEV 2025</span>
-      <span class="wu-diff diff-medium">EASY</span>
+      <span class="wu-diff diff-medium">MEDIUM</span>
     </div>
     <h1 class="wu-title">Hybrid — Vulnlab</h1>
     <p class="wu-desc">
@@ -220,19 +232,6 @@
     <span class="ac-arrow">→</span>
     <div class="ac-step highlight">ADCS ESC1<br>Administrator</div>
   </div>
-
-  <nav class="toc">
-    <div class="toc-title">// Índice</div>
-    <ol>
-      <li><a href="#recon">Information Gathering</a></li>
-      <li><a href="#nfs">Enumeração NFS</a></li>
-      <li><a href="#roundcube">Roundcube RCE</a></li>
-      <li><a href="#lateral">NFS UID Spoofing</a></li>
-      <li><a href="#keepass">KeePass</a></li>
-      <li><a href="#adcs">ADCS ESC1</a></li>
-      <li><a href="#admin">Administrator</a></li>
-    </ol>
-  </nav>
 
   <div class="wu-content">
 
