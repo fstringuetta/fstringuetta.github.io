@@ -162,7 +162,8 @@
 
     .writeup-grid { display: grid; gap: 2px; }
     .writeup-card {
-      display: grid; grid-template-columns: 1fr auto; gap: 8px 20px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 20px;
       padding: 24px 28px; background: var(--panel);
       border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan-dim);
       text-decoration: none; color: inherit; transition: all .25s; position: relative; overflow: hidden;
