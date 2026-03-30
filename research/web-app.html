@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Application Security // fstringuetta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:    #000408;
+      --panel:    #010d1a;
+      --cyan:     #00d4ff;
+      --cyan2:    #00aacc;
+      --cyan-dim: #004455;
+      --orange:   #ff6600;
+      --white:    #e0f7ff;
+      --muted:    #3a7a8a;
+      --green:    #44ff88;
+      --purple:   #cc88ff;
+      --ff-title: 'Orbitron', monospace;
+      --ff-mono:  'Share Tech Mono', monospace;
+      --glow-sm:  0 0 8px #00d4ff88;
+      --glow-md:  0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    /* HEADER */
+    .page-header { padding: 72px 0 56px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 56px; }
+    .page-pre { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+    .page-pre::before { content: ''; display: block; width: 40px; height: 1px; background: var(--cyan); box-shadow: var(--glow-sm); }
+    .page-title { font-family: var(--ff-title); font-size: clamp(28px, 5vw, 52px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.1; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 20px; }
+    .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.9; }
+
+    /* SECTION */
+    .section-head { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+    .section-num { font-family: var(--ff-title); font-size: 11px; color: var(--orange); letter-spacing: 0.15em; opacity: .7; }
+    .section-title { font-family: var(--ff-title); font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan); text-shadow: var(--glow-sm); text-transform: uppercase; }
+    .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--cyan-dim), transparent); }
+
+    /* STUDY CARDS */
+    .study-grid { display: grid; gap: 2px; margin-bottom: 64px; }
+    .study-card {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 28px 32px; background: var(--panel);
+      border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan-dim);
+      text-decoration: none; color: inherit; transition: all .25s; position: relative; overflow: hidden;
+    }
+    .study-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--cyan); box-shadow: var(--glow-md); transform: scaleY(0); transition: transform .25s; transform-origin: bottom; }
+    .study-card:hover { background: #011520; border-color: var(--cyan2); }
+    .study-card:hover::before { transform: scaleY(1); }
+    .study-card:hover .sc-arrow { color: var(--cyan); text-shadow: var(--glow-sm); transform: translate(3px,-3px); }
+    .sc-body { flex: 1; }
+    .sc-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .sc-tag { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 10px; border: 1px solid; }
+    .tag-module { border-color: #cc88ff55; color: var(--purple); }
+    .tag-academy { border-color: #00d4ff55; color: var(--cyan2); }
+    .sc-date { font-size: 12px; color: var(--muted); }
+    .sc-title { font-family: var(--ff-title); font-size: 17px; font-weight: 700; letter-spacing: 0.04em; color: var(--white); margin-bottom: 8px; line-height: 1.3; }
+    .sc-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 580px; }
+    .sc-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .sc-topic { font-size: 11px; color: var(--muted); padding: 2px 8px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .sc-arrow { font-size: 20px; color: var(--muted); transition: all .25s; flex-shrink: 0; margin-left: 20px; align-self: center; }
+
+    /* COMING SOON */
+    .coming-soon { background: var(--panel); border: 1px dashed var(--cyan-dim); padding: 28px 32px; display: flex; align-items: center; gap: 16px; opacity: .5; }
+    .cs-icon { font-family: var(--ff-title); font-size: 11px; color: var(--muted); border: 1px solid var(--cyan-dim); padding: 4px 10px; white-space: nowrap; }
+    .cs-text { font-size: 13px; color: var(--muted); }
+
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">FSTR<span class="slash">/</span>NGUETTA</a>
+    <a href="../index.html" class="nav-back">Voltar</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <header class="page-header">
+    <p class="page-pre">Research · Área de Estudo</p>
+    <h1 class="page-title">Web Application<br>Security</h1>
+    <p class="page-desc">
+      Vulnerabilidades lógicas, bypass de autenticação, OWASP Top 10 em ambientes reais.
+      Notas de módulos, write-ups e pesquisas focadas em falhas que scanners automáticos não detectam.
+    </p>
+  </header>
+
+  <!-- MÓDULOS & ESTUDOS -->
+  <section style="margin-bottom: 64px;">
+    <div class="section-head">
+      <span class="section-num">01.</span>
+      <h2 class="section-title">Módulos & Estudos</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="study-grid">
+
+      <a href="api-attack.html" class="study-card">
+        <div class="sc-body">
+          <div class="sc-meta">
+            <span class="sc-tag tag-module">Módulo</span>
+            <span class="sc-tag tag-academy">HTB Academy</span>
+            <span class="sc-date">MAR 2026</span>
+          </div>
+          <h3 class="sc-title">API Attacks — OWASP API Security Top 10</h3>
+          <p class="sc-desc">
+            Exploração completa do OWASP API Security Top 10 em uma API RESTful do marketplace Inlanefreight.
+            Cobertura de BOLA, Broken Auth, Mass Assignment, SSRF, SQLi e Docker escape via kernel module.
+          </p>
+          <div class="sc-topics">
+            <span class="sc-topic">BOLA/IDOR</span>
+            <span class="sc-topic">Broken Auth</span>
+            <span class="sc-topic">Mass Assignment</span>
+            <span class="sc-topic">SSRF</span>
+            <span class="sc-topic">SQLi</span>
+            <span class="sc-topic">BFLA</span>
+            <span class="sc-topic">Rate Limiting</span>
+            <span class="sc-topic">JWT</span>
+          </div>
+        </div>
+        <span class="sc-arrow">↗</span>
+      </a>
+
+      <div class="coming-soon">
+        <span class="cs-icon">// EM BREVE</span>
+        <p class="cs-text">Mais módulos e pesquisas serão adicionados em breve.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2025 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
