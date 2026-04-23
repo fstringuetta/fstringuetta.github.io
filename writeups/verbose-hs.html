@@ -255,12 +255,13 @@ mfa             [Status: 302]</code></pre>
       <p>Com apenas 10.000 combinações possíveis (0000–9999) e sem bloqueio por tentativas, o código é trivialmente bypassável via brute force com Burp Intruder ou ffuf.</p>
     </div>
 
-    <p>Capturamos a requisição de verificação do MFA no Burp Suite e automatizamos as tentativas iterando de <code>0000</code> a <code>9999</code>:</p>
+    <p>O mecanismo de validação utiliza um código composto por apenas 4 dígitos, o que reduz significativamente o espaço de possibilidades e o torna suscetível a ataques de força bruta. A requisição de verificação do código foi interceptada com o auxílio do Burp Suite, permitindo a automatização das tentativas. </p>
 
     <figure><img src="imgs/2026-04-23_11-26.png" alt="Burp Intruder configurado para brute force do MFA" /></figure>
+    <p>A partir desse processo, foi possível identificar um código válido de autenticação, resultando no acesso indevido à funcionalidade protegida.</p>
     <figure><img src="imgs/2026-04-23_11-26_1.png" alt="Código MFA válido encontrado" /></figure>
 
-    <p>Código válido identificado. Acesso ao dashboard administrativo obtido.</p>
+    <p>Assim que acessamos o dashboard com privilégios administrativos conseguimos nossa primeira evidência dentro do menu Admin Panel.</p>
 
     <figure><img src="imgs/2026-04-23_11-53.png" alt="Admin Panel com primeira flag" /></figure>
 
