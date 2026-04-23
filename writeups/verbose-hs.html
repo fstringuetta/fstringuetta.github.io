@@ -192,11 +192,18 @@
 PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.14
 80/tcp open  http    Werkzeug httpd 3.1.5 (Python 3.12.3)
-|_http-title: Hack Smarter Portal
-|_Requested resource was /login</code></pre>
+| http-title: Hack Smarter Portal
+|_Requested resource was /login
+|_http-server-header: Werkzeug/3.1.5 Python/3.12.3
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
-    <p><strong>Werkzeug/Python</strong> — indica aplicação Flask. Referência do script: <a href="https://github.com/fstringuetta/enumport" target="_blank">github.com/fstringuetta/enumport</a></p>
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 12.50 seconds</code></pre>
 
+    Referência do script: <a href="https://github.com/fstringuetta/enumport" target="_blank">github.com/fstringuetta/enumport</a></p>
+
+
+    <h3>Config Hosts</h3>
     <pre><span class="lang-label">bash</span><code>$ echo '10.0.26.157 verbose.hs' | sudo tee -a /etc/hosts</code></pre>
 
     <h2 id="enum-web">Enumeração Web</h2>
