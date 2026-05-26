@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chrome</title>
+<link rel="icon" href="https://www.google.com/favicon.ico">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .icon { font-size: 80px; animation: pulse 0.7s infinite; }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  h1 { color: #ff2222; font-size: 22px; margin: 16px 0 8px; letter-spacing: 2px; }
+  .sub { color: #ff8800; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .bar-bg { width: 90%; max-width: 340px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin: 0 auto 8px; }
+  .bar-fill { height: 100%; background: #ff2200; border-radius: 5px; animation: loadbar 2.5s infinite; }
+  @keyframes loadbar { 0%{width:0%} 100%{width:100%} }
+  .percent { color: #ff4444; font-size: 13px; margin-bottom: 20px; }
+  .log {
+    background: rgba(0,255,68,0.06);
+    border: 1px solid rgba(0,255,68,0.25);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    color: #00ff44;
+    width: 90%;
+    max-width: 340px;
+    margin: 0 auto 20px;
+    line-height: 1.8;
+  }
+  .warn { color: #fff; font-size: 13px; opacity: 0.75; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:0.75} 50%{opacity:0.2} }
+  .reveal {
+    display: none;
+    margin-top: 30px;
+    background: #111;
+    border: 2px solid #00ff44;
+    border-radius: 12px;
+    padding: 20px;
+    color: #00ff44;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="icon">⚠️</div>
+<h1>⛔ VÍRUS DETECTADO!</h1>
+<div class="sub">
+  5 ameaças críticas encontradas!<br>
+  Seus dados estão sendo apagados...
+</div>
+<div class="bar-bg"><div class="bar-fill"></div></div>
+<div class="percent" id="pct">Infectando arquivos: 0%</div>
+<div class="log">
+  &gt; trojan.exe detectado<br>
+  &gt; contatos.db → CORROMPIDO<br>
+  &gt; fotos → DELETANDO...<br>
+  &gt; mensagens → VAZANDO...<br>
+  &gt; sistema → COMPROMETIDO
+</div>
+<div class="warn">⚠️ NÃO DESLIGUE O CELULAR! ⚠️</div>
+
+<div class="reveal" id="reveal">
+  😄 Era uma pegadinha!<br><br>
+  Nenhum vírus real faz isso.<br>
+  Mas sites e apps desconhecidos<br>
+  <strong>podem sim roubar seus dados.</strong><br><br>
+  Cuidado com o que você clica! 🔐
+</div>
+
+<script>
+  let n = 0;
+  const el = document.getElementById('pct');
+  const timer = setInterval(() => {
+    n += 1;
+    el.textContent = 'Infectando arquivos: ' + n + '%';
+    if (n >= 100) {
+      clearInterval(timer);
+      el.textContent = '💀 SISTEMA DESTRUÍDO';
+      setTimeout(() => {
+        document.getElementById('reveal').style.display = 'block';
+      }, 2000);
+    }
+  }, 60);
+</script>
+</body>
+</html>
