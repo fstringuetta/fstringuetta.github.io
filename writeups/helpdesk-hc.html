@@ -216,7 +216,7 @@ PORT     STATE SERVICE VERSION
 
     <p>Ao acessar a porta 80, identificamos uma página estática de Help Desk sem funcionalidades dinâmicas aparentes.</p>
 
-    <figure><img src="imgs/help.png" alt="Página estática Help Desk na porta 80" /></figure>
+    <figure><img src="imgs/2025-04-18_11-17.png" alt="Página estática Help Desk na porta 80" /></figure>
 
     <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt \
   -u http://helpdesk.hc/FUZZ -c -r
@@ -250,8 +250,7 @@ public      [Status: 200]</code></pre>
 
     <p>A estrutura de diretórios confirma ser um GLPI. Identificamos a versão da aplicação para busca de vulnerabilidades conhecidas.</p>
 
-    <figure><img src="imgs/2025-04-18_11-17.png" alt="Versão GLPI 10.0.17 identificada" /></figure>
-
+    
     <div class="callout-info">
       <div class="cf-title">ℹ GLPI 10.0.17 — Vulnerabilidade Conhecida</div>
       <p>Pesquisa com a dork <code>glpi 10.0.17 exploit</code> retorna um artigo detalhado sobre SQLi to RCE: <a href="https://blog.lexfo.fr/glpi-sql-to-rce.html" target="_blank">blog.lexfo.fr/glpi-sql-to-rce.html</a></p>
